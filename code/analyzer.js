@@ -10,13 +10,13 @@ const analyzeContracts = (contracts) => {
   let overallMaxNesting = { value: 0 };
 
   contracts.forEach(({ file, ast }) => {
-    if (!ast) return; // Skip if AST is null due to parsing error
+    if (!ast) return;
 
     let maxNesting = { value: 0 };
 
     for (const node of ast.children) {
       if (node.type === "PragmaDirective") {
-        continue; // Skip pragma directives
+        continue;
       }
 
       for (const subNode of node.subNodes) {

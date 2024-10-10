@@ -7,26 +7,36 @@ const parseContracts = (contracts) => {
       return { file, ast };
     } catch (e) {
       console.error(`Error parsing ${file}:`, e.message);
-      return { file, ast: null }; // Return null AST on error
+      return { file, ast: null };
     }
   });
 };
 
 const parseLoops = (loopTypes, statements, maxNested) => {
-  let nestedLevels = 0;
+  let currentNesting = 0;
+  let maxCurrentNesting = 0;
+
   for (const statement of statements) {
     if (loopTypes.has(statement.type)) {
-      nestedLevels++;
-      nestedLevels += parseLoops(
+      currentNesting++;
+
+      const bodyNested = parseLoops(
         loopTypes,
-        statement.body.statements || [], // Use empty array if body.statements is undefined
+        statement.body.statements || [],
         maxNested
       );
+
+      maxCurrentNesting = Math.max(
+        currentNesting + bodyNested,
+        maxCurrentNesting
+      );
+
+      maxNested.value = Math.max(maxNested.value, currentNesting + bodyNested);
     }
+    currentNesting = 0;
   }
 
-  maxNested.value = Math.max(maxNested.value, nestedLevels);
-  return nestedLevels;
+  return maxCurrentNesting;
 };
 
 module.exports = {

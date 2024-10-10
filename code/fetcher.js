@@ -1,10 +1,11 @@
 const axios = require("axios");
 const fs = require("fs");
 const csv = require("csv-parser");
+const path = require("path");
 require("dotenv").config(); // Make sure your .env file contains the ETHERSCAN_API_KEY
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Your Etherscan API key
-const inputFilePath = "../contracts.csv"; // Path to your CSV file
+const inputFilePath = path.join(__dirname, "../contracts.csv"); // Path to your CSV file
 const outputDir = path.join(__dirname, "../contracts-source"); // Directory where source code will be saved
 const delayBetweenRequests = 500; // Half a second delay between each API request
 
