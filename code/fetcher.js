@@ -5,7 +5,7 @@ require("dotenv").config(); // Make sure your .env file contains the ETHERSCAN_A
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Your Etherscan API key
 const inputFilePath = "../contracts.csv"; // Path to your CSV file
-const outputDir = ".././contracts-source"; // Directory where source code will be saved
+const outputDir = path.join(__dirname, "../contracts-source"); // Directory where source code will be saved
 const delayBetweenRequests = 500; // Half a second delay between each API request
 
 // Ensure output directory exists
