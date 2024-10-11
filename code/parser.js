@@ -1,5 +1,6 @@
 const parser = require("@solidity-parser/parser");
 
+// ostaviti u JS
 const parseContracts = (contracts) => {
   return contracts.map(({ file, input }) => {
     try {
@@ -12,37 +13,20 @@ const parseContracts = (contracts) => {
   });
 };
 
+// prepisati u C
 const parseLoops = (loopTypes, statements, maxNested) => {
-  let currentNesting = 0;
-  let maxNestedInCurrent = 0;
+  let nestedLevels = 0;
 
   for (const statement of statements) {
     if (loopTypes.has(statement.type)) {
-      currentNesting++;
+      nestedLevels =
+        1 + parseLoops(loopTypes, statement.body.statements || [], maxNested);
 
-      const bodyNested = parseLoops(
-        loopTypes,
-        statement.body.statements || [],
-        maxNested
-      );
-
-      // since curerntNesting has to be reset,
-      // in order to return the amount of nesting found
-      // we need to keep track of it
-      maxNestedInCurrent = Math.max(
-        currentNesting + bodyNested,
-        maxNestedInCurrent
-      );
-
-      // cannot return this as then same loop will get counter multiple times
-      maxNested.value = Math.max(maxNested.value, currentNesting + bodyNested);
+      maxNested.value = Math.max(maxNested.value, nestedLevels);
     }
-    // needs to reset after every loop so loops
-    // do not get added together
-    currentNesting = 0;
   }
 
-  return maxNestedInCurrent;
+  return nestedLevels;
 };
 
 module.exports = {

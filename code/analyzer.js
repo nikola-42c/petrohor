@@ -1,5 +1,6 @@
 const { parseLoops } = require("./parser");
 
+// prepisati u C
 const analyzeContracts = (contracts) => {
   const loopTypes = new Set([
     "WhileStatement",
@@ -7,12 +8,12 @@ const analyzeContracts = (contracts) => {
     "ForStatement",
   ]);
 
-  let overallMaxNesting = { value: 0 };
+  let overallMaxNesting = 0;
 
   contracts.forEach(({ file, ast }) => {
     if (!ast) return;
 
-    let maxNesting = { value: 0 };
+    let maxNestingForContract = { value: 0 };
 
     for (const node of ast.children) {
       if (node.type === "PragmaDirective") {
@@ -25,19 +26,20 @@ const analyzeContracts = (contracts) => {
           subNode.body &&
           subNode.body.type === "Block"
         ) {
-          parseLoops(loopTypes, subNode.body.statements, maxNesting);
+          parseLoops(loopTypes, subNode.body.statements, maxNestingForContract);
         }
       }
     }
 
-    console.log(`Max nesting in ${file}:`, maxNesting.value);
-    overallMaxNesting.value = Math.max(
-      overallMaxNesting.value,
-      maxNesting.value
+    console.log(`Max nesting in ${file}:`, maxNestingForContract.value);
+
+    overallMaxNesting = Math.max(
+      overallMaxNesting,
+      maxNestingForContract.value
     );
   });
 
-  console.log("Overall max nesting across contracts:", overallMaxNesting.value);
+  console.log("Overall max nesting across contracts:", overallMaxNesting);
 };
 
 module.exports = {
