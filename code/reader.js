@@ -1,7 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 
-const sourceDir = path.join(__dirname, "../contracts-ast");
+const sourceDir = path.join(__dirname, "../contracts_ast");
 
 const readContracts = () => {
   const files = fs.readdirSync(sourceDir);

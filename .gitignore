@@ -1,6 +1,6 @@
 .env
 /node_modules
-/contracts-source
-/contracts-ast
+/contracts_source
+/contracts_ast
 *.csv
 

@@ -24,8 +24,8 @@ node code/fetcher.js
 
 Two directories should appear:
 
-- contracts-ast
-- contracts-source
+- contracts_ast
+- contracts_source
 
 You can use these to verify the loop count result. Especially the source code.
 
