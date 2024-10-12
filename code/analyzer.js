@@ -41,7 +41,7 @@ const analyzeContracts = (contracts) => {
         maxNestingForContract.value
       );
     } catch (err) {
-      console.error(`Error: ${err} - file: ${file}`);
+      console.error(`${err} - file: ${file}`);
     }
   });
 

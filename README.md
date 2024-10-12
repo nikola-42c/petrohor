@@ -16,6 +16,14 @@ Make sure you have a valid Etherscan API key and you save it to the `.env` file 
 
 ## Usage
 
+Automated:
+
+```sh
+chmod +x run.sh && ./run.sh
+```
+
+Or manually:
+
 Fetch the contracts from the Etherscan a few times using:
 
 ```sh
@@ -37,4 +45,4 @@ node index.js
 
 This will read the contract ASTs from `contract-asts` and count the loops.
 
-More statistics are TBD.
+# More statistics are TBD.
