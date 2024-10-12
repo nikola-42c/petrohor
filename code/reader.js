@@ -1,20 +1,23 @@
 const fs = require("fs");
 const path = require("path");
 
-const sourceDir = path.join(__dirname, "../contracts-source");
+const sourceDir = path.join(__dirname, "../contracts-ast");
 
 const readContracts = () => {
   const files = fs.readdirSync(sourceDir);
   const contracts = [];
 
   files.forEach((file) => {
-    if (path.extname(file) === ".sol") {
+    if (path.extname(file) === ".json") {
       const filePath = path.join(sourceDir, file);
       try {
         const input = fs.readFileSync(filePath, "utf-8");
-        contracts.push({ file, input });
+
+        const ast = JSON.parse(input);
+
+        contracts.push({ file, ast });
       } catch (e) {
-        console.error(`Error reading ${file}:`, e.message);
+        console.error(`Error reading or parsing ${file}:`, e.message);
       }
     }
   });

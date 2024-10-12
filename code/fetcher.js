@@ -2,34 +2,42 @@ const axios = require("axios");
 const fs = require("fs");
 const csv = require("csv-parser");
 const path = require("path");
-require("dotenv").config(); // Make sure your .env file contains the ETHERSCAN_API_KEY
+require("dotenv").config();
+const parser = require("@solidity-parser/parser");
 
-const apiKey = process.env.ETHERSCAN_API_KEY; // Your Etherscan API key
+const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
 const inputFilePath = path.join(__dirname, "../contracts.csv"); // Path to your CSV file
-const outputDir = path.join(__dirname, "../contracts-source"); // Directory where source code will be saved
-const delayBetweenRequests = 500; // Half a second delay between each API request
+const sourceOutputDir = path.join(__dirname, "../contracts-source"); // Directory for source code
+const astOutputDir = path.join(__dirname, "../contracts-ast"); // Directory for AST
 
-// Ensure output directory exists
-if (!fs.existsSync(outputDir)) {
-  fs.mkdirSync(outputDir);
+// Ensure output directories exist
+if (!fs.existsSync(sourceOutputDir)) {
+  fs.mkdirSync(sourceOutputDir);
+}
+if (!fs.existsSync(astOutputDir)) {
+  fs.mkdirSync(astOutputDir);
 }
 
-// Function to get the source code for a contract address
+// Function to fetch the source code and generate AST for a contract
 async function getContractSource(contractAddress, contractName) {
   const url = `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${contractAddress}&apikey=${apiKey}`;
-
   try {
     const response = await axios.get(url);
+
     if (response.data.status === "1" && response.data.result.length > 0) {
       const contractData = response.data.result[0];
       const sourceCode = contractData.SourceCode || "No source code found.";
 
-      // Save the source code to a file named after the contract
-      fs.writeFileSync(
-        `${outputDir}/${contractName}_${contractAddress}.sol`,
-        sourceCode
-      );
+      const sourceFilePath = `${sourceOutputDir}/${contractName}_${contractAddress}.sol`;
+      fs.writeFileSync(sourceFilePath, sourceCode);
       console.log(`Saved source code for ${contractName} (${contractAddress})`);
+
+      const ast = parser.parse(sourceCode);
+
+      // Save AST as a JSON file
+      const astFilePath = `${astOutputDir}/${contractName}_${contractAddress}.json`;
+      fs.writeFileSync(astFilePath, JSON.stringify(ast, null, 2));
+      console.log(`Saved AST for ${contractName} (${contractAddress})`);
     } else {
       console.log(
         `Failed to fetch source for ${contractAddress}: ${response.data.message}`
@@ -43,26 +51,14 @@ async function getContractSource(contractAddress, contractName) {
   }
 }
 
-// Function to introduce a delay
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-// Read the CSV and fetch source code for the first 10 contracts with a delay
-async function processContracts() {
+async function fetchContracts() {
   let contractCount = 0;
   fs.createReadStream(inputFilePath)
     .pipe(csv())
     .on("data", async (row) => {
-      if (contractCount < 10) {
-        const { ContractAddress, ContractName } = row;
+      const { ContractAddress, ContractName } = row;
 
-        // Fetch the contract source and wait for the delay
-        await getContractSource(ContractAddress, ContractName);
-        await delay(delayBetweenRequests);
-
-        contractCount++;
-      }
+      await getContractSource(ContractAddress, ContractName);
     })
     .on("end", () => {
       console.log("Finished processing CSV.");
@@ -70,4 +66,4 @@ async function processContracts() {
     });
 }
 
-processContracts();
+fetchContracts();
