@@ -7,7 +7,7 @@ const parser = require("@solidity-parser/parser");
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
 const inputFilePath = path.join(__dirname, "../contracts.csv"); // Path to your CSV file
-const sourceOutputDir = path.join(__dirname, "../contracts_source"); // Directory for source code
+const sourceOutputDir = path.join(__dirname, "../contracts_src"); // Directory for source code
 const astOutputDir = path.join(__dirname, "../contracts_ast"); // Directory for AST
 
 // Ensure output directories exist

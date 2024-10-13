@@ -1,5 +1,7 @@
 # Verified Solidity Contracts Fetcher + Loop analyzer
 
+![Architecture overview](images/architecture.png)
+
 Code to fetch contracts from Etherscan based on their address and count the loops, as well as nested loop levels, in the fetched contracts.
 
 Currently addresses can only be read from the CSV file you can finde [here](https://etherscan.io/exportData?type=open-source-contract-codes).
@@ -33,7 +35,7 @@ node code/fetcher.js
 Two directories should appear:
 
 - contracts_ast
-- contracts_source
+- contracts_src
 
 You can use these to verify the loop count result. Especially the source code.
 
