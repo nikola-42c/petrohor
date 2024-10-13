@@ -4,13 +4,19 @@
 
 Code to fetch contracts from Etherscan based on their address and count the loops, as well as nested loop levels, in the fetched contracts.
 
-Currently addresses can only be read from the CSV file you can finde [here](https://etherscan.io/exportData?type=open-source-contract-codes).
+Currently addresses can only be read from the CSV file you can find [here](https://etherscan.io/exportData?type=open-source-contract-codes).
 
 ## Requirements
 
 - NodeJS
 
 ## Setup
+
+Run:
+
+```sh
+npm install
+```
 
 Download [the CSV](https://etherscan.io/exportData?type=open-source-contract-codes) and save it as `contracts.csv` in the root of directory.
 

@@ -28,13 +28,19 @@ async function getContractSource(contractAddress, contractName) {
       const contractData = response.data.result[0];
       const sourceCode = contractData.SourceCode || "No source code found.";
 
+      if (!sourceCode || sourceCode === "") {
+        console.log(
+          `Contract ${contractName} (${contractAddress}) is not verified.`
+        );
+        return;
+      }
+
       const sourceFilePath = `${sourceOutputDir}/${contractName}_${contractAddress}.sol`;
       fs.writeFileSync(sourceFilePath, sourceCode);
       console.log(`Saved source code for ${contractName} (${contractAddress})`);
 
       const ast = parser.parse(sourceCode);
 
-      // Save AST as a JSON file
       const astFilePath = `${astOutputDir}/${contractName}_${contractAddress}.json`;
       fs.writeFileSync(astFilePath, JSON.stringify(ast, null, 2));
       console.log(`Saved AST for ${contractName} (${contractAddress})`);
@@ -52,18 +58,31 @@ async function getContractSource(contractAddress, contractName) {
 }
 
 async function fetchContracts() {
-  let contractCount = 0;
-  fs.createReadStream(inputFilePath)
-    .pipe(csv())
-    .on("data", async (row) => {
-      const { ContractAddress, ContractName } = row;
+  const contracts = [];
 
-      await getContractSource(ContractAddress, ContractName);
-    })
-    .on("end", () => {
-      console.log("Finished processing CSV.");
-      console.log(`${contractCount} fetched.`);
-    });
+  // Load the contracts from CSV into an array
+  await new Promise((resolve, reject) => {
+    fs.createReadStream(inputFilePath)
+      .pipe(csv())
+      .on("data", (row) => {
+        contracts.push(row); // Collect all contracts
+      })
+      .on("end", resolve)
+      .on("error", reject);
+  });
+
+  for (const row of contracts) {
+    const { ContractAddress, ContractName } = row;
+    await getContractSource(ContractAddress, ContractName);
+
+    await sleep(250);
+  }
+
+  console.log("Finished processing all contracts.");
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 fetchContracts();
