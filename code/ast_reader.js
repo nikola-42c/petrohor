@@ -3,7 +3,7 @@ const path = require("path");
 
 const sourceDir = path.join(__dirname, "../contracts_ast");
 
-const readContracts = () => {
+const readContractASTs = () => {
   const files = fs.readdirSync(sourceDir);
   const contracts = [];
 
@@ -26,5 +26,5 @@ const readContracts = () => {
 };
 
 module.exports = {
-  readContracts,
+  readContractASTs,
 };

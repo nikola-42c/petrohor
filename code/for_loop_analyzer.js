@@ -1,6 +1,7 @@
 const { parseLoops } = require("./parser");
+const { readContractASTs } = require("./ast_reader");
 
-const analyzeContracts = (contracts) => {
+const analyzeForLoops = (contracts) => {
   const loopTypes = new Set([
     "WhileStatement",
     "DoWhileStatement",
@@ -51,7 +52,7 @@ const analyzeContracts = (contracts) => {
   });
 
   console.log("-------------------------------------------");
-  console.log("------------- STAT SUMMARY ----------------");
+  console.log("---------- FOR LOOP STAT SUMMARY ----------");
   console.log("-------------------------------------------");
   console.log("Overall max nesting across contracts:", overallMaxNesting);
   console.log("File name with max nesting:", overallMaxNestingFile);
@@ -63,6 +64,15 @@ const analyzeContracts = (contracts) => {
   console.log("Total:", totalContractCount);
 };
 
-module.exports = {
-  analyzeContracts,
-};
+async function main() {
+  const contractASTs = readContractASTs();
+  analyzeForLoops(contractASTs);
+}
+
+async function main() {
+  const contractASTs = readContractASTs();
+  analyzeForLoops(contractASTs);
+  return Promise.resolve();
+}
+
+module.exports = main;

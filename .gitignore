@@ -2,5 +2,6 @@
 /node_modules
 /contracts_src
 /contracts_ast
+/contracts_bytecode
 *.csv
-
+*.zip
