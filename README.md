@@ -1,4 +1,8 @@
-# Verified Solidity Contracts Fetcher + Loop analyzer
+# Verified Solidity Contracts Sourcecode and Bytecode Analyzer
+
+Also fetches the contract source code, makes AST from the fetched source code, and fetches the bytecode.
+
+All the fetched files are in the form of _contract name_\__contract address_.
 
 ![Architecture overview](images/architecture.png)
 
@@ -30,27 +34,28 @@ Automated:
 chmod +x run.sh && ./run.sh
 ```
 
-Or manually:
+There are two fetching scripts that make 4 API calls per second. And in `contracts.csv` there are 5000 contracts.
 
-Fetch the contracts from the Etherscan a few times using:
-
-```sh
-node code/fetcher.js
-```
-
-Two directories should appear:
+After all the fetching is done, three directories should appear:
 
 - contracts_ast
 - contracts_src
+- contracts_bytecode
 
-You can use these to verify the loop count result. Especially the source code.
+You can use these to verify the results. Especially the source code.
 
-In order to count the loops run:
+After the contacts have been fetched you can just run:
 
 ```sh
 node index.js
 ```
 
-This will read the contract ASTs from `contract-asts` and count the loops.
+This will read the contract ASTs from `contracts_ast` and count the loops, along with reading `contracts_bytecode` and count the `SSTORE` opcodes.
 
-# More statistics are TBD.
+## Statistics
+
+- Max loop depth (along with source file name to confirm)
+- Max nesting histogram of each file with generated AST (4552 in total)
+- Max `SSTORE` count (along with bytecode file name)
+- Average `SSTORE` count (of 5000 in total)
+- `SSTORE` histogram
