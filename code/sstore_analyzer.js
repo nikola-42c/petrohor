@@ -1,5 +1,6 @@
 const fs = require("fs");
 const path = require("path");
+const csvWriter = require("csv-writer").createObjectCsvWriter; // Import the CSV writer
 
 // Function to count SSTORE occurrences in bytecode
 function countSstoreOccurrences(bytecode) {
@@ -35,6 +36,17 @@ async function main() {
   let maxFileName = ""; // File name with maximum SSTORE count
   let sstoreHist = new Array(210).fill(0);
 
+  // Set up CSV writer
+  const writer = csvWriter({
+    path: path.resolve(__dirname, "../sstore_output.csv"), // Path to the CSV file
+    header: [
+      { id: "fileName", title: "File Name" },
+      { id: "sstoreCount", title: "SSTORE Count" },
+    ],
+  });
+
+  const records = []; // Array to hold records for CSV writing
+
   for (const fileName of bytecodeFiles) {
     const filePath = path.join(bytecodesDir, fileName); // Construct full file path
     const bytecode = fs.readFileSync(filePath, "utf-8").trim(); // Read bytecode file
@@ -50,10 +62,16 @@ async function main() {
         maxSstoreCount = sstoreCount;
         maxFileName = fileName;
       }
+
+      // Add record to array for CSV writing
+      records.push({ fileName, sstoreCount });
     } catch (error) {
       console.error(`Error processing ${fileName}: ${error.message}`);
     }
   }
+
+  // Write records to CSV
+  await writer.writeRecords(records);
 
   const averageSstoreCount =
     successfulSstoreCount > 0 ? totalSstoreCount / successfulSstoreCount : 0;
@@ -70,7 +88,5 @@ async function main() {
       console.log(`${sstores} SSTOREs found in ${count} contracts.`);
   });
 }
-
-main();
 
 module.exports = main;

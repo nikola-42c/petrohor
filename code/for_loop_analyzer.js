@@ -1,7 +1,8 @@
 const { parseLoops } = require("./parser");
 const { readContractASTs } = require("./ast_reader");
+const csvWriter = require("csv-writer").createObjectCsvWriter; // Import the CSV writer
 
-const analyzeForLoops = (contracts) => {
+const analyzeForLoops = async (contracts) => {
   const loopTypes = new Set([
     "WhileStatement",
     "DoWhileStatement",
@@ -12,6 +13,17 @@ const analyzeForLoops = (contracts) => {
   let overallMaxNestingFile = "";
   let maxNestingHist = new Array(5).fill(0);
   let totalContractCount = 0;
+
+  // Set up CSV writer
+  const writer = csvWriter({
+    path: "./for_loop_output.csv", // Path to the CSV file
+    header: [
+      { id: "file", title: "File Name" },
+      { id: "maxNesting", title: "Max Nesting" },
+    ],
+  });
+
+  const records = []; // Array to hold records for CSV writing
 
   contracts.forEach(({ file, ast }) => {
     if (!ast) return;
@@ -38,7 +50,9 @@ const analyzeForLoops = (contracts) => {
         }
       }
 
-      console.log(`Max nesting in ${file}:`, maxNestingForContract.value);
+      // Add record to array for CSV writing
+      records.push({ file, maxNesting: maxNestingForContract.value });
+
       maxNestingHist[maxNestingForContract.value]++;
       totalContractCount++;
 
@@ -50,6 +64,9 @@ const analyzeForLoops = (contracts) => {
       console.error(`${err} - file: ${file}`);
     }
   });
+
+  // Write records to CSV
+  await writer.writeRecords(records);
 
   console.log("-------------------------------------------");
   console.log("---------- FOR LOOP STAT SUMMARY ----------");
@@ -66,13 +83,7 @@ const analyzeForLoops = (contracts) => {
 
 async function main() {
   const contractASTs = readContractASTs();
-  analyzeForLoops(contractASTs);
-}
-
-async function main() {
-  const contractASTs = readContractASTs();
-  analyzeForLoops(contractASTs);
-  return Promise.resolve();
+  await analyzeForLoops(contractASTs); // Ensure the function is awaited
 }
 
 module.exports = main;

@@ -47,10 +47,18 @@ You can use these to verify the results. Especially the source code.
 After the contacts have been fetched you can just run:
 
 ```sh
-node index.js
+node index.js > temp.txt
 ```
 
 This will read the contract ASTs from `contracts_ast` and count the loops, along with reading `contracts_bytecode` and count the `SSTORE` opcodes.
+
+The output for each and every analyzed contracts will be stored in `for_loop_output.csv` and `sstore_output.csv`.
+
+To visualize the `SSTORE` histogram a little easier run:
+
+```sh
+python3 plot_sstore_counts.py
+```
 
 ## Statistics
 
