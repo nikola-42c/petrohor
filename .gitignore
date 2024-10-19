@@ -3,5 +3,9 @@
 /contracts_src
 /contracts_ast
 /contracts_bytecode
+/cache
+/artifacts
 *.csv
 *.zip
+*.txt
+tx_logs.json

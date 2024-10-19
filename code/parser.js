@@ -13,6 +13,4 @@ const parseLoops = (loopTypes, statements, maxNested) => {
   return nestedLevels;
 };
 
-module.exports = {
-  parseLoops,
-};
+export default parseLoops;

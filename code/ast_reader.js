@@ -1,7 +1,7 @@
-const fs = require("fs");
-const path = require("path");
+import fs from "fs";
+import path from "path";
 
-const sourceDir = path.join(__dirname, "../contracts_ast");
+const sourceDir = path.join(process.cwd(), "/contracts_ast");
 
 const readContractASTs = () => {
   const files = fs.readdirSync(sourceDir);
@@ -25,6 +25,4 @@ const readContractASTs = () => {
   return contracts;
 };
 
-module.exports = {
-  readContractASTs,
-};
+export default readContractASTs;

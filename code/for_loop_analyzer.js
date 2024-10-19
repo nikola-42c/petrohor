@@ -1,6 +1,6 @@
-const { parseLoops } = require("./parser");
-const { readContractASTs } = require("./ast_reader");
-const csvWriter = require("csv-writer").createObjectCsvWriter; // Import the CSV writer
+import parseLoops from "./parser.js";
+import readContractASTs from "./ast_reader.js";
+import { createObjectCsvWriter } from "csv-writer"; // Use ES module import
 
 const analyzeForLoops = async (contracts) => {
   const loopTypes = new Set([
@@ -15,7 +15,7 @@ const analyzeForLoops = async (contracts) => {
   let totalContractCount = 0;
 
   // Set up CSV writer
-  const writer = csvWriter({
+  const writer = createObjectCsvWriter({
     path: "./for_loop_output.csv", // Path to the CSV file
     header: [
       { id: "file", title: "File Name" },
@@ -86,4 +86,4 @@ async function main() {
   await analyzeForLoops(contractASTs); // Ensure the function is awaited
 }
 
-module.exports = main;
+export default main;

@@ -12,7 +12,8 @@ Currently addresses can only be read from the CSV file you can find [here](https
 
 ## Requirements
 
-- NodeJS
+- node
+- python3
 
 ## Setup
 

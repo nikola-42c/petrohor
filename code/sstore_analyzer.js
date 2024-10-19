@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const csvWriter = require("csv-writer").createObjectCsvWriter; // Import the CSV writer
+import fs from "fs";
+import path from "path";
+import { createObjectCsvWriter } from "csv-writer"; // Import the CSV writer
 
 // Function to count SSTORE occurrences in bytecode
 function countSstoreOccurrences(bytecode) {
@@ -27,7 +27,7 @@ function countSstoreOccurrences(bytecode) {
 }
 
 async function main() {
-  const bytecodesDir = path.resolve(__dirname, "../contracts_bytecode");
+  const bytecodesDir = path.join(process.cwd(), "/contracts_bytecode");
   const bytecodeFiles = fs.readdirSync(bytecodesDir); // Read files from the directory
 
   let successfulSstoreCount = 0; // Counter for successful SSTORE counts
@@ -37,8 +37,8 @@ async function main() {
   let sstoreHist = new Array(210).fill(0);
 
   // Set up CSV writer
-  const writer = csvWriter({
-    path: path.resolve(__dirname, "../sstore_output.csv"), // Path to the CSV file
+  const writer = createObjectCsvWriter({
+    path: "sstore_output.csv", // Path to the CSV file
     header: [
       { id: "fileName", title: "File Name" },
       { id: "sstoreCount", title: "SSTORE Count" },
@@ -89,4 +89,4 @@ async function main() {
   });
 }
 
-module.exports = main;
+export default main;

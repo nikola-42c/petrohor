@@ -1,6 +1,7 @@
 {
   "name": "petrohor",
   "version": "1.0.0",
+  "type": "module",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,6 +16,11 @@
     "csv-parser": "^3.0.0",
     "csv-writer": "^1.6.0",
     "dotenv": "^16.4.5",
+    "ethers": "^6.13.4",
+    "node-fetch": "^3.3.2",
     "solc": "^0.8.28"
+  },
+  "devDependencies": {
+    "hardhat": "^2.22.13"
   }
 }

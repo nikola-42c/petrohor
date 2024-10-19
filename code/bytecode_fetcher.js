@@ -1,12 +1,14 @@
-const axios = require("axios");
-const fs = require("fs");
-const csv = require("csv-parser");
-const path = require("path");
-require("dotenv").config();
+import axios from "axios"; // Importing axios
+import fs from "fs"; // Importing fs
+import csv from "csv-parser"; // Importing csv-parser
+import path from "path"; // Importing path
+import dotenv from "dotenv"; // Importing dotenv
+
+dotenv.config();
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
-const inputFilePath = path.join(__dirname, "../contracts.csv"); // Path to your CSV file
-const bytecodeOutputDir = path.join(__dirname, "../contracts_bytecode"); // Directory for bytecode
+const inputFilePath = path.join(process.cwd(), "/contracts.csv"); // Path to your CSV file
+const bytecodeOutputDir = path.join(process.cwd(), "/contracts_bytecode"); // Directory for bytecode
 
 // Ensure output directory exists
 if (!fs.existsSync(bytecodeOutputDir)) {

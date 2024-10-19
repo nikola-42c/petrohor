@@ -1,5 +1,5 @@
-const forLoopAnalyzer = require("./code/for_loop_analyzer");
-const sstoreAnalyzer = require("./code/sstore_analyzer");
+import forLoopAnalyzer from "./code/for_loop_analyzer.js";
+import sstoreAnalyzer from "./code/sstore_analyzer.js";
 
 forLoopAnalyzer()
   .then(() => {
