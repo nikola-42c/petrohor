@@ -8,6 +8,7 @@ contract Test {
     uint256 d;
 
     constructor() {
+        d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
         if (x > y) {
             d = x;
             require(x >= 5, "error");
@@ -29,7 +30,7 @@ contract Test {
             if (x > z) {
                 require(x >= 5, "error");
 
-                // d = y > z ? 8 : z > 4 ? 5 : 6;
+                d = y > z ? 8 : z > 4 ? 5 : 6;
                 if (z > 3) {
                     assert(x >= 5);
                     d = z;
@@ -57,6 +58,6 @@ contract Test {
     }
 
     function k() public view returns (uint256) {
-        return x > 5 ? 5 : y > 2 ? 3 : 4;
+        return y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
     }
 }
