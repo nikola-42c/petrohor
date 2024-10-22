@@ -1,9 +1,11 @@
-const axios = require("axios");
-const fs = require("fs");
-const csv = require("csv-parser");
-const path = require("path");
-require("dotenv").config();
-const parser = require("@solidity-parser/parser");
+import axios from "axios"; // Importing axios
+import fs from "fs"; // Importing fs
+import csv from "csv-parser"; // Importing csv-parser
+import path from "path"; // Importing path
+import dotenv from "dotenv"; // Importing dotenv
+
+dotenv.config();
+import parser from "@solidity-parser/parser";
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
 const inputFilePath = path.join(process.cwd(), "/contracts.csv"); // Path to your CSV file

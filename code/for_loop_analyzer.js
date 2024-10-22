@@ -1,4 +1,4 @@
-import parseLoops from "./parser.js";
+import parseLoops from "./for_loop_parser.js";
 import readContractASTs from "./ast_reader.js";
 import { createObjectCsvWriter } from "csv-writer"; // Use ES module import
 
