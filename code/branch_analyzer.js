@@ -4,6 +4,21 @@ import { createObjectCsvWriter } from "csv-writer"; // Use ES module import
 import parser from "@solidity-parser/parser";
 import fs from "fs";
 
+const isAssert = (statement) => {
+  return (
+    statement.expression &&
+    statement.expression.expression &&
+    statement.expression.expression.name === "assert"
+  );
+};
+
+const isRequire = (statement) => {
+  return (
+    statement.expression &&
+    statement.expression.expression &&
+    statement.expression.expression.name === "require"
+  );
+};
 const parseBranch = (branch, maxNested) => {
   console.log("[PARSE BRANCH] - ", branch);
   let maxLocal = 0;
@@ -21,6 +36,11 @@ const parseBranch = (branch, maxNested) => {
 };
 
 const parseIfStatements = (statement, maxNested) => {
+  if (isAssert(statement) || isRequire(statement)) {
+    console.log("[FOUND ASSERT OR REQUIRE]");
+    return 1;
+  }
+
   if (statement.type !== "IfStatement") return 0;
 
   let nestedLevels = 0;
@@ -50,6 +70,9 @@ const analyzeBranches = async () => {
 
   try {
     const ast = parser.parse(fileContent);
+
+    // console.log("AST for test.sol:", JSON.stringify(ast, null, 2));
+    // console.log("*********************************************");
 
     let maxNestingForContract = { value: 0 };
 

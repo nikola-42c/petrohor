@@ -10,7 +10,10 @@ contract Test {
     constructor() {
         if (x > y) {
             d = x;
+            require(x >= 5, "error");
+
             if (x > z) {
+                require(x >= 5, "error");
                 d = 8;
             }
         } else if (y > z) {
@@ -24,9 +27,15 @@ contract Test {
         if (x > y) {
             d = x;
             if (x > z) {
+                require(x >= 5, "error");
+
                 // d = y > z ? 8 : z > 4 ? 5 : 6;
                 if (z > 3) {
+                    assert(x >= 5);
                     d = z;
+                    if (z > 2) {
+                        require(z >= 2);
+                    }
                 }
             }
         } else if (y > z) {
