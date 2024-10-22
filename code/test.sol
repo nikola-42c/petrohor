@@ -15,6 +15,7 @@ contract Test {
 
             if (x > z) {
                 require(x >= 5, "error");
+                d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
                 d = 8;
             }
         } else if (y > z) {
@@ -36,6 +37,7 @@ contract Test {
                     d = z;
                     if (z > 2) {
                         require(z >= 2);
+                        d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
                     }
                 }
             }

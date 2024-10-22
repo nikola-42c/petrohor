@@ -54,7 +54,7 @@ const isTernaryReturn = (statement) => {
 
 const parseTernaryBranch = (branch, maxNested) => {
   if (verbose) console.log("[PARSE TERNARY BRANCH] - ", branch);
-  if (branch.type !== "Conditional") return 1;
+  if (branch.type !== "Conditional") return 0;
   return parseTernaryStatement(branch, maxNested);
 };
 
