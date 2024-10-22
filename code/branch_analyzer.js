@@ -33,7 +33,7 @@ const parseIfStatements = (statement, maxNested) => {
   if (statement.falseBody) {
     console.log("Parsing false...");
     nestedFalse = 1 + parseBranch(statement.falseBody, maxNested);
-    console.log("[NESTED FALSE] - ", nestedTrue);
+    console.log("[NESTED FALSE] - ", nestedFalse);
   }
 
   nestedLevels = Math.max(nestedLevels, nestedTrue, nestedFalse);
