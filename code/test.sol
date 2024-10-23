@@ -15,7 +15,7 @@ contract Test {
 
             if (x > z) {
                 require(x >= 5, "error");
-                d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
+                d = y > z ? z < 4 ? f() : 7 : z > 4 ? 5 : 6;
                 d = 8;
             }
         } else if (y > z) {
@@ -25,7 +25,7 @@ contract Test {
         }
     }
 
-    function f() public {
+    function f() public returns (uint256) {
         if (x > y) {
             d = x;
             if (x > z) {
@@ -48,6 +48,8 @@ contract Test {
         }
 
         if (x < y) d = 7;
+
+        return 1;
     }
 
     function g() public view returns (uint256) {
