@@ -1,6 +1,10 @@
 import { ethers } from "ethers";
 import fs from "fs";
 import path from "path";
+import dotenv from "dotenv";
+
+// Load environment variables from .env file
+dotenv.config();
 
 const CONTRACTS_FILE = path.resolve(process.cwd(), "../contract_addresses.txt");
 
@@ -9,7 +13,7 @@ if (!fs.existsSync(CONTRACTS_FILE)) {
   fs.writeFileSync(CONTRACTS_FILE, "");
 }
 
-const BLOCK_START = 20150670; // Starting block to scan for contracts
+const BLOCK_START = parseInt(process.env.START_BLOCK, 10) || 20150670; // Starting block to scan for contracts
 const BLOCK_END = 21036668; // Ending block or use a specific block number
 
 async function main() {
