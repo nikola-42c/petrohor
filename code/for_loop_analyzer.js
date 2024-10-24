@@ -1,6 +1,45 @@
-import parseLoops from "./for_loop_parser.js";
-import readContractASTs from "./ast_reader.js";
 import { createObjectCsvWriter } from "csv-writer"; // Use ES module import
+import fs from "fs";
+import path from "path";
+
+const sourceDir = path.join(process.cwd(), "../contracts_ast");
+
+const readContractASTs = () => {
+  const files = fs.readdirSync(sourceDir);
+  const contracts = [];
+
+  files.forEach((file) => {
+    if (path.extname(file) === ".json") {
+      const filePath = path.join(sourceDir, file);
+      try {
+        const input = fs.readFileSync(filePath, "utf-8");
+
+        const ast = JSON.parse(input);
+
+        contracts.push({ file, ast });
+      } catch (e) {
+        console.error(`Error reading or parsing ${file}:`, e.message);
+      }
+    }
+  });
+
+  return contracts;
+};
+
+const parseLoops = (loopTypes, statements, maxNested) => {
+  let nestedLevels = 0;
+
+  for (const statement of statements) {
+    if (loopTypes.has(statement.type)) {
+      nestedLevels =
+        1 + parseLoops(loopTypes, statement.body.statements || [], maxNested);
+
+      maxNested.value = Math.max(maxNested.value, nestedLevels);
+    }
+  }
+
+  return nestedLevels;
+};
 
 const analyzeForLoops = async (contracts) => {
   const loopTypes = new Set([
