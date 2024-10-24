@@ -1,44 +1,69 @@
 import { ethers } from "ethers";
-import dotenv from "dotenv"; // Importing dotenv
+import fs from "fs";
+import path from "path";
 
-dotenv.config();
+// Ensure the directories and files exist
+const CONTRACTS_DIR = path.join(process.cwd(), "contracts_bytecode");
+const CONTRACTS_FILE = path.join(process.cwd(), "contract_addresses.txt");
 
-async function getBlockFromTimestamp(timestamp) {
-  // Load Alchemy API key from environment variable
-  const alchemyApiKey = process.env.ALCHEMY_API_KEY;
+if (!fs.existsSync(CONTRACTS_DIR)) {
+  fs.mkdirSync(CONTRACTS_DIR, { recursive: true });
+}
 
-  // Connect to the Ethereum mainnet (or forked node, if applicable)
-  const provider = new ethers.JsonRpcProvider(
-    `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`
+if (!fs.existsSync(CONTRACTS_FILE)) {
+  // If the file doesn't exist, create an empty file
+  fs.writeFileSync(CONTRACTS_FILE, "");
+}
+
+const BLOCK_START = 20150670; // Starting block to scan for contracts
+const BLOCK_END = "latest"; // Ending block or use a specific block number
+
+async function main() {
+  // Connect to the local Hardhat fork
+  const provider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
+
+  let currentBlock = await provider.getBlockNumber();
+  console.log(`Current block number: ${currentBlock}`);
+
+  const startBlock = BLOCK_START || 0;
+  const endBlock = BLOCK_END === "latest" ? currentBlock : BLOCK_END;
+
+  console.log(
+    `Scanning for contracts between blocks ${startBlock} and ${endBlock}...`
   );
 
-  // Use a binary search approach to find the block closest to the timestamp
-  const latestBlock = await provider.getBlock("latest"); // Get the latest block to start with
-  let low = 0;
-  let high = latestBlock.number;
-  let closestBlock = null;
+  for (let blockNumber = startBlock; blockNumber <= endBlock; blockNumber++) {
+    const block = await provider.getBlockWithTransactions(blockNumber);
 
-  while (low <= high) {
-    const mid = Math.floor((low + high) / 2);
-    const block = await provider.getBlock(mid);
+    for (const tx of block.transactions) {
+      // If `to` is null, it's a contract creation transaction
+      if (tx.to === null) {
+        const contractAddress = tx.creates;
+        console.log(`Contract created at: ${contractAddress}`);
 
-    if (block.timestamp < timestamp) {
-      low = mid + 1;
-    } else {
-      high = mid - 1;
-      closestBlock = block;
+        // Fetch the contract bytecode
+        const bytecode = await provider.getCode(contractAddress);
+
+        if (bytecode === "0x") {
+          console.log(`No bytecode found for contract at: ${contractAddress}`);
+          continue;
+        }
+
+        // Save the bytecode to the contracts_bytecode directory
+        const bytecodeFilename = `${contractAddress}.bytecode`;
+        const bytecodeFilePath = path.join(CONTRACTS_DIR, bytecodeFilename);
+        fs.writeFileSync(bytecodeFilePath, bytecode);
+        console.log(`Saved contract bytecode to: ${bytecodeFilePath}`);
+
+        // Append the contract address to contract_addresses.txt
+        fs.appendFileSync(CONTRACTS_FILE, `${contractAddress}\n`);
+        console.log(`Appended contract address to: ${CONTRACTS_FILE}`);
+      }
     }
-  }
-
-  if (closestBlock) {
-    console.log(
-      `Closest block number to timestamp ${timestamp} is: ${closestBlock.number}`
-    );
-    return closestBlock.number;
-  } else {
-    console.log(`No block found for the given timestamp ${timestamp}`);
   }
 }
 
-// Run the function with your timestamp
-getBlockFromTimestamp(1719100800); // Replace with your timestamp
+// Run the script
+main().catch((error) => {
+  console.error("Error:", error);
+});
