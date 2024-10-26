@@ -4,6 +4,12 @@ import path from "path";
 
 const sourceDir = path.join(process.cwd(), "../contracts_ast");
 
+const loopTypes = new Set([
+  "WhileStatement",
+  "DoWhileStatement",
+  "ForStatement",
+]);
+
 const readContractASTs = () => {
   const files = fs.readdirSync(sourceDir);
   const contracts = [];
@@ -26,13 +32,12 @@ const readContractASTs = () => {
   return contracts;
 };
 
-const parseLoops = (loopTypes, statements, maxNested) => {
+const parseLoops = (statements, maxNested) => {
   let nestedLevels = 0;
 
   for (const statement of statements) {
     if (loopTypes.has(statement.type)) {
-      nestedLevels =
-        1 + parseLoops(loopTypes, statement.body.statements || [], maxNested);
+      nestedLevels = 1 + parseLoops(statement.body.statements || [], maxNested);
 
       maxNested.value = Math.max(maxNested.value, nestedLevels);
     }
@@ -42,12 +47,6 @@ const parseLoops = (loopTypes, statements, maxNested) => {
 };
 
 const analyzeForLoops = async (contracts) => {
-  const loopTypes = new Set([
-    "WhileStatement",
-    "DoWhileStatement",
-    "ForStatement",
-  ]);
-
   let overallMaxNesting = 0;
   let overallMaxNestingFile = "";
   let maxNestingHist = new Array(5).fill(0);
@@ -55,7 +54,7 @@ const analyzeForLoops = async (contracts) => {
 
   // Set up CSV writer
   const writer = createObjectCsvWriter({
-    path: "./for_loop_output.csv", // Path to the CSV file
+    path: "../for_loop_output.csv", // Path to the CSV file
     header: [
       { id: "file", title: "File Name" },
       { id: "maxNesting", title: "Max Nesting" },
@@ -73,6 +72,7 @@ const analyzeForLoops = async (contracts) => {
         if (node.type === "PragmaDirective") {
           continue;
         }
+        if (!node.subNodes) continue;
 
         for (const subNode of node.subNodes) {
           if (
@@ -80,11 +80,7 @@ const analyzeForLoops = async (contracts) => {
             subNode.body &&
             subNode.body.type === "Block"
           ) {
-            parseLoops(
-              loopTypes,
-              subNode.body.statements,
-              maxNestingForContract
-            );
+            parseLoops(subNode.body.statements, maxNestingForContract);
           }
         }
       }
@@ -125,4 +121,4 @@ async function main() {
   await analyzeForLoops(contractASTs); // Ensure the function is awaited
 }
 
-export default main;
+main();

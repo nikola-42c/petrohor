@@ -1,67 +1,35 @@
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+// SPDX-License-Identifier: SEE LICENSE IN LICENSE
+pragma solidity 0.8.28;
 
 contract Test {
-    uint256 x = 5;
-    uint256 y = 4;
-    uint256 z = 3;
-    uint256 d;
+    uint256 x;
+    uint256 y;
+    uint256 z;
 
     constructor() {
-        d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
-        if (x > y) {
-            d = x;
-            require(x >= 5, "error");
-
-            if (x > z) {
-                require(x >= 5, "error");
-                d = y > z ? z < 4 ? f() : 7 : z > 4 ? 5 : 6;
-                d = 8;
-            }
-        } else if (y > z) {
-            d = y;
-        } else {
-            d = z;
-        }
-    }
-
-    function f() public returns (uint256) {
-        if (x > y) {
-            d = x;
-            if (x > z) {
-                require(x >= 5, "error");
-
-                d = y > z ? 8 : z > 4 ? 5 : 6;
-                if (z > 3) {
-                    assert(x >= 5);
-                    d = z;
-                    if (z > 2) {
-                        require(z >= 2);
-                        d = y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
+        for (uint256 i = 0; i < 10; i++) {
+            x = 5;
+            y = 10;
+            y = 10;
+            y = 10;
+            y = 10;
+            for (uint256 j = 0; j < 10; j++) {
+                x = 5;
+                y = 10;
+                y = 10;
+                for (uint256 k = 0; k < 10; k++) {
+                    y = 10;
+                    y = 10;
+                    y = 10;
+                    y = 10;
+                    if (x < 5) {
+                        z = 4;
+                        y = 10;
+                    } else {
+                        z = 5;
                     }
                 }
             }
-        } else if (y > z) {
-            d = y;
-        } else {
-            d = z;
         }
-
-        if (x < y) d = 7;
-
-        return 1;
-    }
-
-    function g() public view returns (uint256) {
-        return x + y - z;
-    }
-
-    function h() public returns (uint256) {
-        d = x > 5 ? y : z;
-        return d;
-    }
-
-    function k() public view returns (uint256) {
-        return y > z ? z < 4 ? 5 : 7 : z > 4 ? 5 : 6;
     }
 }

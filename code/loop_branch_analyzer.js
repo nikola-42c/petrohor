@@ -1,10 +1,17 @@
 import { createObjectCsvWriter } from "csv-writer"; // Use ES module import
 import fs from "fs";
 import path from "path";
+import parser from "@solidity-parser/parser";
 
 var verbose = false;
 
 const sourceDir = path.join(process.cwd(), "../contracts_ast");
+
+const loopTypes = new Set([
+  "WhileStatement",
+  "DoWhileStatement",
+  "ForStatement",
+]);
 
 const readContractASTs = () => {
   const files = fs.readdirSync(sourceDir);
@@ -64,15 +71,6 @@ const isTernaryReturn = (statement) => {
     statement.expression.type === "Conditional"
   );
 };
-
-/* Ternary:
-  - expression ako:
-    statement.type === "ExpressionStatement" && statement.expression.right.type === "Conditional"
-    - ako je type === "Conditional" onda ce imati "trueExpression" i "falseExpression" rekurzivno
-  
-  - return ako:
-    statement.type === "ReturnStatement" && statement.expression.type === "Conditional"
-*/
 
 const parseTernaryBranch = (branch, maxNested) => {
   if (verbose) console.log("[PARSE TERNARY BRANCH] - ", branch);
@@ -160,23 +158,44 @@ const parseIfStatements = (statement, maxNested) => {
   return nestedLevels;
 };
 
-const analyzeBranches = async (contracts) => {
-  if (process.argv[2] && process.argv[2] === "-v") {
-    verbose = true;
-  } else if (process.argv[2] && process.argv[2] === "-vv") {
-    verbose = true;
-    console.log("AST:", JSON.stringify(ast, null, 2));
-    console.log("*********************************************");
+const parseLoop = (loopStatement, maxNested) => {
+  if (!loopTypes.has(loopStatement.type)) return 0;
+  let nestedLevels = 1;
+
+  if (!loopStatement.body.statements) return nestedLevels;
+  if (verbose) console.log("[LOOP - LOOPING OVER STATEMENTS]");
+  for (const statement of loopStatement.body.statements) {
+    if (verbose) console.log("[CURRENT STATEMENT] -", statement);
+    if (loopTypes.has(statement.type)) {
+      nestedLevels = 1 + parseLoop(statement, maxNested);
+    }
+
+    maxNested.value = Math.max(maxNested.value, nestedLevels);
   }
+
+  return nestedLevels;
+};
+
+const analyzeLoopsAndBranches = async (contracts) => {
+  // TODO: read the source code from test.sol, same directory as this file
+  // const sourceCode = fs.readFileSync("test.sol", "utf8");
+  // const ast = parser.parse(sourceCode);
+  // if (process.argv[2] && process.argv[2] === "-v") {
+  //   verbose = true;
+  // } else if (process.argv[2] && process.argv[2] === "-vv") {
+  //   verbose = true;
+  //   console.log("AST:", JSON.stringify(ast, null, 2));
+  //   console.log("*********************************************");
+  // }
 
   let overallMaxNesting = 0;
   let overallMaxNestingFile = "";
-  let maxNestingHist = new Array(15).fill(0);
+  let maxNestingHist = new Array(5).fill(0);
   let totalContractCount = 0;
 
   // Set up CSV writer
   const writer = createObjectCsvWriter({
-    path: "../branching_output.csv",
+    path: "../loop_branch_output.csv",
     header: [
       { id: "file", title: "File Name" },
       { id: "maxNesting", title: "Max Nesting" },
@@ -188,28 +207,29 @@ const analyzeBranches = async (contracts) => {
   contracts.forEach(({ file, ast }) => {
     if (!ast) return;
 
+    let maxNestingForContract = { value: 0 };
     try {
-      let maxNestingForContract = { value: 0 };
-
       for (const node of ast.children) {
-        if (node.type === "PragmaDirective") continue;
+        if (node.type === "PragmaDirective") {
+          continue;
+        }
         if (!node.subNodes) continue;
 
-        for (const subnode of node.subNodes) {
+        for (const subNode of node.subNodes) {
           if (
-            subnode.type === "FunctionDefinition" &&
-            subnode.body &&
-            subnode.body.type === "Block"
+            subNode.type === "FunctionDefinition" &&
+            subNode.body &&
+            subNode.body.type === "Block"
           ) {
-            for (const statement of subnode.body.statements) {
-              if (verbose) console.log("[CURRENT STATEMENT] - ", statement);
-              parseIfStatements(statement, maxNestingForContract);
-              parseTernaryStatement(statement, maxNestingForContract);
+            for (const statement of subNode.body.statements) {
+              if (verbose) console.log("[CURRENT STATEMENT] -", statement);
+              parseLoop(statement, maxNestingForContract);
             }
           }
         }
       }
 
+      // Add record to array for CSV writing
       records.push({ file, maxNesting: maxNestingForContract.value });
 
       maxNestingHist[maxNestingForContract.value]++;
@@ -227,7 +247,7 @@ const analyzeBranches = async (contracts) => {
   await writer.writeRecords(records);
 
   console.log("-------------------------------------------");
-  console.log("--------- BRANCHING STAT SUMMARY ----------");
+  console.log("-------- LOOP BRANCH STAT SUMMARY ---------");
   console.log("-------------------------------------------");
   console.log("Overall max nesting across contracts:", overallMaxNesting);
   console.log("File name with max nesting:", overallMaxNestingFile);
@@ -241,7 +261,7 @@ const analyzeBranches = async (contracts) => {
 
 async function main() {
   const contractASTs = readContractASTs();
-  await analyzeBranches(contractASTs);
+  await analyzeLoopsAndBranches(contractASTs);
 }
 
 main();
