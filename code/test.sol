@@ -7,7 +7,7 @@ contract Test {
     uint256 z;
 
     constructor() {
-        for (uint256 i = 0; i < 10; i++) {
+        if (x > 6) {
             x = 5;
             y = 10;
             y = 10;
@@ -27,6 +27,12 @@ contract Test {
                         y = 10;
                     } else {
                         z = 5;
+                    }
+
+                    if (x < 5) {
+                        z = 4;
+                        y = 10;
+                        x = z == 4 ? y < 15 ? 2 : 1 : 3;
                     }
                 }
             }

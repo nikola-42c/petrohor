@@ -120,8 +120,9 @@ const parseIfBranch = (branch, maxNested) => {
 
       const localIf = parseIfStatements(statement, maxNested);
       const localTernary = parseTernaryStatement(statement, maxNested);
+      const localLoop = parseLoop(statement, maxNested);
 
-      maxLocal = Math.max(maxLocal, localIf, localTernary);
+      maxLocal = Math.max(maxLocal, localIf, localTernary, localLoop);
     }
 
     return maxLocal;
@@ -158,17 +159,27 @@ const parseIfStatements = (statement, maxNested) => {
   return nestedLevels;
 };
 
-const parseLoop = (loopStatement, maxNested) => {
-  if (!loopTypes.has(loopStatement.type)) return 0;
-  let nestedLevels = 1;
+const parseLoop = (parentStatement, maxNested) => {
+  if (!loopTypes.has(parentStatement.type)) return 0;
+  if (!parentStatement.body.statements) return 1;
 
-  if (!loopStatement.body.statements) return nestedLevels;
+  let nestedLevelsFor = 1;
+  let nestedLevelsIf = 1;
+  let nestedLevelsTernary = 1;
+  let nestedLevels;
+
   if (verbose) console.log("[LOOP - LOOPING OVER STATEMENTS]");
-  for (const statement of loopStatement.body.statements) {
+  for (const statement of parentStatement.body.statements) {
     if (verbose) console.log("[CURRENT STATEMENT] -", statement);
-    if (loopTypes.has(statement.type)) {
-      nestedLevels = 1 + parseLoop(statement, maxNested);
-    }
+    nestedLevelsFor = 1 + parseLoop(statement, maxNested);
+    nestedLevelsIf = 1 + parseIfStatements(statement, maxNested);
+    nestedLevelsTernary = 1 + parseTernaryStatement(statement, maxNested);
+
+    nestedLevels = Math.max(
+      nestedLevelsFor,
+      nestedLevelsIf,
+      nestedLevelsTernary
+    );
 
     maxNested.value = Math.max(maxNested.value, nestedLevels);
   }
@@ -177,7 +188,6 @@ const parseLoop = (loopStatement, maxNested) => {
 };
 
 const analyzeLoopsAndBranches = async (contracts) => {
-  // TODO: read the source code from test.sol, same directory as this file
   // const sourceCode = fs.readFileSync("test.sol", "utf8");
   // const ast = parser.parse(sourceCode);
   // if (process.argv[2] && process.argv[2] === "-v") {
@@ -190,10 +200,9 @@ const analyzeLoopsAndBranches = async (contracts) => {
 
   let overallMaxNesting = 0;
   let overallMaxNestingFile = "";
-  let maxNestingHist = new Array(5).fill(0);
+  let maxNestingHist = new Array(16).fill(0);
   let totalContractCount = 0;
 
-  // Set up CSV writer
   const writer = createObjectCsvWriter({
     path: "../loop_branch_output.csv",
     header: [
@@ -224,6 +233,8 @@ const analyzeLoopsAndBranches = async (contracts) => {
             for (const statement of subNode.body.statements) {
               if (verbose) console.log("[CURRENT STATEMENT] -", statement);
               parseLoop(statement, maxNestingForContract);
+              parseIfStatements(statement, maxNestingForContract);
+              parseTernaryStatement(statement, maxNestingForContract);
             }
           }
         }
