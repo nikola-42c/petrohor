@@ -4,11 +4,11 @@ import csv from "csv-parser"; // Importing csv-parser
 import path from "path"; // Importing path
 import dotenv from "dotenv"; // Importing dotenv
 
-dotenv.config();
+dotenv.config({ path: "../.env" });
 
 const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
-const inputFilePath = path.join(process.cwd(), "/contracts.csv"); // Path to your CSV file
-const bytecodeOutputDir = path.join(process.cwd(), "/contracts_bytecode"); // Directory for bytecode
+const inputFilePath = path.join(process.cwd(), "../contracts.csv"); // Path to your CSV file
+const bytecodeOutputDir = path.join(process.cwd(), "../contracts_bytecode"); // Directory for bytecode
 
 // Ensure output directory exists
 if (!fs.existsSync(bytecodeOutputDir)) {
@@ -53,19 +53,36 @@ async function getContractBytecode(contractAddress, contractName) {
 async function fetchContracts() {
   const contracts = [];
 
-  // Load the contracts from CSV into an array
   await new Promise((resolve, reject) => {
     fs.createReadStream(inputFilePath)
-      .pipe(csv())
+      .pipe(csv({ separator: "\t" }))
       .on("data", (row) => {
-        contracts.push(row); // Collect all contracts
+        if (row.ContractAddress && row.ContractName) {
+          contracts.push(row);
+        } else {
+          console.log("Missing ContractAddress or ContractName in row:", row);
+        }
       })
       .on("end", resolve)
       .on("error", reject);
   });
 
+  const existingBytecodes = new Set(
+    fs
+      .readdirSync(bytecodeOutputDir)
+      .map((file) => file.split("_").pop().replace(".bytecode", ""))
+  );
+
   for (const row of contracts) {
     const { ContractAddress, ContractName } = row;
+
+    if (!ContractAddress || !ContractName) {
+      console.error("Missing ContractAddress or ContractName in row:", row);
+      continue;
+    }
+
+    if (existingBytecodes.has(ContractAddress)) continue;
+
     await getContractBytecode(ContractAddress, ContractName);
 
     await sleep(250); // To avoid hitting rate limits

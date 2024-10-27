@@ -1,16 +1,16 @@
-import axios from "axios"; // Importing axios
-import fs from "fs"; // Importing fs
-import csv from "csv-parser"; // Importing csv-parser
-import path from "path"; // Importing path
-import dotenv from "dotenv"; // Importing dotenv
-
-dotenv.config();
+import axios from "axios";
+import fs from "fs";
+import csv from "csv-parser";
+import path from "path";
+import dotenv from "dotenv";
 import parser from "@solidity-parser/parser";
 
-const apiKey = process.env.ETHERSCAN_API_KEY; // Etherscan API key
-const inputFilePath = path.join(process.cwd(), "/contracts.csv"); // Path to your CSV file
-const sourceOutputDir = path.join(process.cwd(), "/contracts_src"); // Directory for source code
-const astOutputDir = path.join(process.cwd(), "/contracts_ast"); // Directory for AST
+dotenv.config({ path: "../.env" });
+
+const apiKey = process.env.ETHERSCAN_API_KEY;
+const inputFilePath = path.join(process.cwd(), "../contracts.csv");
+const sourceOutputDir = path.join(process.cwd(), "../contracts_src");
+const astOutputDir = path.join(process.cwd(), "../contracts_ast");
 
 // Ensure output directories exist
 if (!fs.existsSync(sourceOutputDir)) {
@@ -65,19 +65,39 @@ async function fetchContracts() {
   // Load the contracts from CSV into an array
   await new Promise((resolve, reject) => {
     fs.createReadStream(inputFilePath)
-      .pipe(csv())
+      .pipe(csv({ separator: "\t" })) // Specify tab as the delimiter
       .on("data", (row) => {
-        contracts.push(row); // Collect all contracts
+        if (row.ContractAddress && row.ContractName) {
+          contracts.push(row);
+        } else {
+          console.log("Missing ContractAddress or ContractName in row:", row);
+        }
       })
       .on("end", resolve)
       .on("error", reject);
   });
 
+  // Create a set of already existing contract addresses in sourceOutputDir
+  const existingContracts = new Set(
+    fs
+      .readdirSync(sourceOutputDir)
+      .filter((file) => file.endsWith(".sol"))
+      .map((file) => file.split("_").pop().replace(".sol", ""))
+  );
+
   for (const row of contracts) {
     const { ContractAddress, ContractName } = row;
-    await getContractSource(ContractAddress, ContractName);
 
-    await sleep(250);
+    if (!ContractAddress || !ContractName) {
+      console.error("Missing ContractAddress or ContractName in row:", row);
+      continue;
+    }
+
+    // Check if the contract address already exists in the set
+    if (existingContracts.has(ContractAddress)) continue;
+
+    await getContractSource(ContractAddress, ContractName);
+    await sleep(250); // Adding delay to avoid API rate limits
   }
 
   console.log("Finished processing all contracts.");
