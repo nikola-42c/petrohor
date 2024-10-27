@@ -3,6 +3,7 @@
 /contracts_src
 /contracts_ast
 /contracts_bytecode
+/contracts_txs
 /contracts_tx_traces
 /cache
 /artifacts
