@@ -3,12 +3,8 @@ import { ethers } from "ethers";
 import dotenv from "dotenv";
 import fs from "fs"; // Import the file system module
 import path from "path"; // Import the path module
-import { Mutex } from "async-mutex";
 
 dotenv.config({ path: "../.env" });
-
-const mutex = new Mutex();
-const MAX_CONCURRENT_TRACES = 16;
 
 const apiKey = process.env.ETHERSCAN_API_KEY;
 const contractName =
@@ -44,14 +40,22 @@ const fetchTransactions = async (contractAddress) => {
   }
 };
 
-const traceTransaction = async (txHash, existingHashes) => {
-  if (existingHashes.has(txHash)) {
-    console.log(
-      `Transaction ${txHash} already exists in the log file. Skipping...`
-    );
-    return; // Skip tracing if the transaction already exists
-  }
+const traceTransactionWithTimeout = async (txHash, timeout = 120000) => {
+  const tracePromise = traceTransaction(txHash);
 
+  // Create a timeout promise
+  const timeoutPromise = new Promise((_, reject) =>
+    setTimeout(
+      () => reject(new Error(`Timeout after ${timeout / 1000} seconds`)),
+      timeout
+    )
+  );
+
+  // Use Promise.race to await the tracePromise or timeoutPromise
+  return Promise.race([tracePromise, timeoutPromise]);
+};
+
+const traceTransaction = async (txHash) => {
   try {
     console.log(`Tracing transaction: ${txHash}`);
     const traceResult = await provider.send("debug_traceTransaction", [txHash]);
@@ -63,24 +67,21 @@ const traceTransaction = async (txHash, existingHashes) => {
       structLogs: traceResult.structLogs || [], // Ensure structLogs exists
     };
 
-    // Lock the mutex before reading/writing the log file
-    await mutex.runExclusive(async () => {
-      if (!fs.existsSync(txOutputDir)) {
-        fs.mkdirSync(txOutputDir, { recursive: true });
-      }
+    if (!fs.existsSync(txOutputDir)) {
+      fs.mkdirSync(txOutputDir, { recursive: true });
+    }
 
-      let existingData = [];
-      if (fs.existsSync(logFilePath)) {
-        const rawData = fs.readFileSync(logFilePath);
-        existingData = JSON.parse(rawData);
-      }
+    let existingData = [];
+    if (fs.existsSync(logFilePath)) {
+      const rawData = fs.readFileSync(logFilePath);
+      existingData = JSON.parse(rawData);
+    }
 
-      existingData.push(logData);
-      fs.writeFileSync(logFilePath, JSON.stringify(existingData, null, 2));
-      console.log(
-        `Trace logs for transaction ${txHash} have been saved to ${logFilePath}`
-      );
-    });
+    existingData.push(logData);
+    fs.writeFileSync(logFilePath, JSON.stringify(existingData, null, 2));
+    console.log(
+      `Trace logs for transaction ${txHash} have been saved to ${logFilePath}`
+    );
   } catch (error) {
     console.error(`Error tracing transaction ${txHash}: `, error);
   }
@@ -133,21 +134,21 @@ const main = async () => {
     existingData.forEach((log) => existingHashes.add(log.transactionHash));
   }
 
-  const tracePromises = []; // Array to hold promises
-
   for (const tx of transactions) {
+    if (existingHashes.has(tx.hash)) {
+      console.log(
+        `Transaction ${tx.hash} already exists in the log file. Skipping...`
+      );
+      continue;
+    }
     await sleep(200);
-    tracePromises.push(traceTransaction(tx.hash, existingHashes));
 
-    // If we've reached the maximum number of concurrent traces, wait for them to finish
-    if (tracePromises.length >= MAX_CONCURRENT_TRACES) {
-      await Promise.all(tracePromises); // Wait for all current traces to finish
-      tracePromises.length = 0; // Clear the array for the next batch
+    try {
+      await traceTransactionWithTimeout(tx.hash);
+    } catch (error) {
+      console.error(`Error tracing transaction ${tx.hash}: ${error.message}`);
     }
   }
-
-  // Wait for any remaining traces to finish
-  await Promise.all(tracePromises);
 
   // Calculate SSTORE gas after all transactions are traced
   calculateSSTOREGas();
