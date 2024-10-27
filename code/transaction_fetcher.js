@@ -3,15 +3,19 @@ import { ethers } from "ethers";
 import dotenv from "dotenv";
 import fs from "fs"; // Import the file system module
 import path from "path"; // Import the path module
+import { Mutex } from "async-mutex";
 
 dotenv.config({ path: "../.env" });
+
+const mutex = new Mutex();
+const MAX_CONCURRENT_TRACES = 16;
 
 const apiKey = process.env.ETHERSCAN_API_KEY;
 const contractName =
   "OdosLimitOrderRouter_0x0f26b03961eb5d625bd6001278f0db13f3e583d8";
 const contractAddress = "0x0f26b03961eb5d625bd6001278f0db13f3e583d8";
 
-const txOutputDir = path.join(process.cwd(), "../contracts_txs");
+const txOutputDir = path.join(process.cwd(), "../contracts_tx_traces");
 const logFilePath = path.join(txOutputDir, `${contractName}_logs.json`); // Path for log file
 
 // Need to start a local hardhat node with `npx hardhat node`
@@ -26,6 +30,9 @@ const fetchTransactions = async (contractAddress) => {
     const data = await response.json();
 
     if (data.status === "1") {
+      console.log(
+        `Contract name: ${contractName} - number of transactions: ${data.result.length}`
+      );
       return data.result.slice(0, 127); // This returns an array of transactions
     } else {
       console.log("Error fetching transactions: ", data.message);
@@ -37,12 +44,18 @@ const fetchTransactions = async (contractAddress) => {
   }
 };
 
-const traceTransaction = async (txHash) => {
+const traceTransaction = async (txHash, existingHashes) => {
+  if (existingHashes.has(txHash)) {
+    console.log(
+      `Transaction ${txHash} already exists in the log file. Skipping...`
+    );
+    return; // Skip tracing if the transaction already exists
+  }
+
   try {
     console.log(`Tracing transaction: ${txHash}`);
     const traceResult = await provider.send("debug_traceTransaction", [txHash]);
 
-    // Prepare the data to be stored, excluding returnValue
     const logData = {
       transactionHash: txHash,
       failed: traceResult.failed,
@@ -50,26 +63,24 @@ const traceTransaction = async (txHash) => {
       structLogs: traceResult.structLogs || [], // Ensure structLogs exists
     };
 
-    // Check if the directory exists; if not, create it
-    if (!fs.existsSync(txOutputDir)) {
-      fs.mkdirSync(txOutputDir, { recursive: true });
-    }
+    // Lock the mutex before reading/writing the log file
+    await mutex.runExclusive(async () => {
+      if (!fs.existsSync(txOutputDir)) {
+        fs.mkdirSync(txOutputDir, { recursive: true });
+      }
 
-    // Check if the log file already exists to append or create a new one
-    let existingData = [];
-    if (fs.existsSync(logFilePath)) {
-      const rawData = fs.readFileSync(logFilePath);
-      existingData = JSON.parse(rawData); // Parse existing data
-    }
+      let existingData = [];
+      if (fs.existsSync(logFilePath)) {
+        const rawData = fs.readFileSync(logFilePath);
+        existingData = JSON.parse(rawData);
+      }
 
-    // Append new trace log to existing data
-    existingData.push(logData);
-
-    // Write the updated data back to <contractName>_logs.json
-    fs.writeFileSync(logFilePath, JSON.stringify(existingData, null, 2)); // Pretty print JSON
-    console.log(
-      `Trace logs for transaction ${txHash} have been saved to ${logFilePath}`
-    );
+      existingData.push(logData);
+      fs.writeFileSync(logFilePath, JSON.stringify(existingData, null, 2));
+      console.log(
+        `Trace logs for transaction ${txHash} have been saved to ${logFilePath}`
+      );
+    });
   } catch (error) {
     console.error(`Error tracing transaction ${txHash}: `, error);
   }
@@ -107,14 +118,36 @@ const calculateSSTOREGas = () => {
   return sstoreGasUsed;
 };
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 // Main function to fetch transactions and trace them for SSTORE gas usage
 const main = async () => {
   const transactions = await fetchTransactions(contractAddress);
 
-  for (const tx of transactions) {
-    console.log(`Tracing transaction: ${tx.hash}`);
-    await traceTransaction(tx.hash); // Wait for the traceTransaction to finish
+  // Load existing transaction hashes into a Set
+  const existingHashes = new Set();
+
+  if (fs.existsSync(logFilePath)) {
+    const rawData = fs.readFileSync(logFilePath);
+    const existingData = JSON.parse(rawData);
+    existingData.forEach((log) => existingHashes.add(log.transactionHash));
   }
+
+  const tracePromises = []; // Array to hold promises
+
+  for (const tx of transactions) {
+    await sleep(200);
+    tracePromises.push(traceTransaction(tx.hash, existingHashes));
+
+    // If we've reached the maximum number of concurrent traces, wait for them to finish
+    if (tracePromises.length >= MAX_CONCURRENT_TRACES) {
+      await Promise.all(tracePromises); // Wait for all current traces to finish
+      tracePromises.length = 0; // Clear the array for the next batch
+    }
+  }
+
+  // Wait for any remaining traces to finish
+  await Promise.all(tracePromises);
 
   // Calculate SSTORE gas after all transactions are traced
   calculateSSTOREGas();
