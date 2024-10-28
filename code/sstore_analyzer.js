@@ -82,11 +82,11 @@ async function main() {
   console.log(`Total successful SSTORE counts: ${successfulSstoreCount}`);
   console.log(`Maximum SSTORE count: ${maxSstoreCount} in ${maxFileName}`);
   console.log(`Average SSTORE count: ${averageSstoreCount}`);
-  console.log("SSTORE histogram:");
-  sstoreHist.forEach((count, sstores) => {
-    if (count > 0)
-      console.log(`${sstores} SSTOREs found in ${count} contracts.`);
-  });
+  // console.log("SSTORE histogram:");
+  // sstoreHist.forEach((count, sstores) => {
+  //   if (count > 0)
+  //     console.log(`${sstores} SSTOREs found in ${count} contracts.`);
+  // });
 }
 
 main();
