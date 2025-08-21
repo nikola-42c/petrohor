@@ -17,7 +17,7 @@ if (!fs.existsSync(bytecodeOutputDir)) {
 
 // Function to fetch the bytecode for a contract
 async function getContractBytecode(contractAddress, contractName) {
-  const url = `https://api.etherscan.io/api?module=proxy&action=eth_getCode&address=${contractAddress}&tag=latest&apikey=${apiKey}`;
+  const url = `https://api.etherscan.io/v2/api?chainid=1&module=proxy&action=eth_getCode&address=${contractAddress}&tag=latest&apikey=${apiKey}`;
   try {
     const response = await axios.get(url);
 

@@ -17,7 +17,7 @@ if (!fs.existsSync(txOutputDir)) {
 
 // Function to fetch transactions from Etherscan
 const fetchTransactions = async (contractAddress, contractName) => {
-  const url = `https://api.etherscan.io/api?module=account&action=txlist&address=${contractAddress}&startblock=0&endblock=99999999&sort=asc&apikey=${apiKey}`;
+  const url = `https://api.etherscan.io/v2/api?chainid=1&module=account&action=txlist&address=${contractAddress}&startblock=0&endblock=99999999&sort=asc&apikey=${apiKey}`;
 
   try {
     const response = await fetch(url);

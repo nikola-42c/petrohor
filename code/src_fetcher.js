@@ -22,7 +22,7 @@ if (!fs.existsSync(astOutputDir)) {
 
 // Function to fetch the source code and generate AST for a contract
 async function getContractSource(contractAddress, contractName) {
-  const url = `https://api.etherscan.io/api?module=contract&action=getsourcecode&address=${contractAddress}&apikey=${apiKey}`;
+  const url = `https://api.etherscan.io/v2/api?chainid=1&module=contract&action=getsourcecode&address=${contractAddress}&apikey=${apiKey}`;
   try {
     const response = await axios.get(url);
 
