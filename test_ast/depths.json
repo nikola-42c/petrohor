@@ -21,13 +21,6 @@
     "expanded_max_depth": 4
   },
   {
-    "file": "03_BuiltinsTwo.json",
-    "function": "encoders",
-    "visibility": "public",
-    "stateMutability": "view",
-    "expanded_max_depth": 3
-  },
-  {
     "file": "04_Mix.json",
     "function": "nested",
     "visibility": "public",
@@ -42,10 +35,10 @@
     "expanded_max_depth": 3
   },
   {
-    "file": "02_BuiltinsOne.json",
-    "function": "lowLevel",
+    "file": "03_BuiltinsTwo.json",
+    "function": "encoders",
     "visibility": "public",
-    "stateMutability": "payable",
+    "stateMutability": "view",
     "expanded_max_depth": 2
   },
   {
@@ -74,6 +67,13 @@
     "function": "hashers",
     "visibility": "public",
     "stateMutability": "pure",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "lowLevel",
+    "visibility": "public",
+    "stateMutability": "payable",
     "expanded_max_depth": 1
   },
   {

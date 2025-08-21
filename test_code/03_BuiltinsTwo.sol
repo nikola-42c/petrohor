@@ -23,7 +23,7 @@ contract BuiltinsTwo {
         b = abi.encodePacked(bytes1(0x01), p); // 2-calls
         c = abi.encodeWithSelector(this.emitIt.selector, p); // 2-calls
         d = abi.encodeWithSignature("emitIt(bytes)", p); // 2-calls
-        e = abi.encodeCall(this.emitIt, (p)); // 3-calls (encode is 2 and `this.emitIt` is 1)
+        e = abi.encodeCall(this.emitIt, (p)); // 2-calls
 
         bc = bytes.concat(a, b, c, d, e); // 2-calls
         sc = string.concat("a", "b"); // 2-calls
