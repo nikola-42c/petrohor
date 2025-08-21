@@ -1,0 +1,191 @@
+[
+  {
+    "file": "user-defined.json",
+    "function": "mega",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 6
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "mega",
+    "visibility": "public",
+    "stateMutability": "payable",
+    "expanded_max_depth": 4
+  },
+  {
+    "file": "user-defined.json",
+    "function": "n4",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 4
+  },
+  {
+    "file": "03_BuiltinsTwo.json",
+    "function": "encoders",
+    "visibility": "public",
+    "stateMutability": "view",
+    "expanded_max_depth": 3
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "nested",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 3
+  },
+  {
+    "file": "user-defined.json",
+    "function": "n3",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 3
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "lowLevel",
+    "visibility": "public",
+    "stateMutability": "payable",
+    "expanded_max_depth": 2
+  },
+  {
+    "file": "03_BuiltinsTwo.json",
+    "function": "move",
+    "visibility": "public",
+    "stateMutability": "payable",
+    "expanded_max_depth": 2
+  },
+  {
+    "file": "user-defined.json",
+    "function": "n2",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 2
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "decodeBlob",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "hashers",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "nuke",
+    "visibility": "public",
+    "stateMutability": "payable",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "02_BuiltinsOne.json",
+    "function": "recover",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "03_BuiltinsTwo.json",
+    "function": "emitIt",
+    "visibility": "external",
+    "stateMutability": "",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "echo",
+    "visibility": "external",
+    "stateMutability": "",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "user-defined.json",
+    "function": "n1",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 1
+  },
+  {
+    "file": "01_BuiltinsZero.json",
+    "function": "zeroBlock",
+    "visibility": "public",
+    "stateMutability": "view",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "01_BuiltinsZero.json",
+    "function": "zeroGas",
+    "visibility": "public",
+    "stateMutability": "view",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "01_BuiltinsZero.json",
+    "function": "zeroHash",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "01_BuiltinsZero.json",
+    "function": "zeroMath",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "01_BuiltinsZero.json",
+    "function": "zeroRevert",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "dbl",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "inc",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "04_Mix.json",
+    "function": "sq",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "user-defined.json",
+    "function": "dbl",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "user-defined.json",
+    "function": "inc",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  },
+  {
+    "file": "user-defined.json",
+    "function": "sq",
+    "visibility": "public",
+    "stateMutability": "pure",
+    "expanded_max_depth": 0
+  }
+]

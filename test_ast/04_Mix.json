@@ -1,0 +1,783 @@
+{
+  "type": "SourceUnit",
+  "children": [
+    {
+      "type": "PragmaDirective",
+      "name": "solidity",
+      "value": "^0.8.20"
+    },
+    {
+      "type": "ContractDefinition",
+      "name": "Mix",
+      "baseContracts": [],
+      "subNodes": [
+        {
+          "type": "EventDefinition",
+          "name": "Done",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "bytes",
+                "stateMutability": null
+              },
+              "name": "data",
+              "identifier": {
+                "type": "Identifier",
+                "name": "data"
+              },
+              "isStateVar": false,
+              "isIndexed": false,
+              "storageLocation": null,
+              "expression": null
+            }
+          ],
+          "isAnonymous": false
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "inc",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "+",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "NumberLiteral",
+                    "number": "1",
+                    "subdenomination": null
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "dbl",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "*",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "NumberLiteral",
+                    "number": "2",
+                    "subdenomination": null
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "sq",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "*",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "name": "x"
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "nested",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "sq"
+                  },
+                  "arguments": [
+                    {
+                      "type": "FunctionCall",
+                      "expression": {
+                        "type": "Identifier",
+                        "name": "dbl"
+                      },
+                      "arguments": [
+                        {
+                          "type": "FunctionCall",
+                          "expression": {
+                            "type": "Identifier",
+                            "name": "inc"
+                          },
+                          "arguments": [
+                            {
+                              "type": "Identifier",
+                              "name": "x"
+                            }
+                          ],
+                          "names": [],
+                          "identifiers": []
+                        }
+                      ],
+                      "names": [],
+                      "identifiers": []
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "mega",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "address",
+                "stateMutability": null
+              },
+              "name": "target",
+              "identifier": {
+                "type": "Identifier",
+                "name": "target"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            },
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "address",
+                "stateMutability": "payable"
+              },
+              "name": "payee",
+              "identifier": {
+                "type": "Identifier",
+                "name": "payee"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            },
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "bytes",
+                "stateMutability": null
+              },
+              "name": "data",
+              "identifier": {
+                "type": "Identifier",
+                "name": "data"
+              },
+              "storageLocation": "memory",
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "bytes",
+                "stateMutability": null
+              },
+              "name": "out",
+              "identifier": {
+                "type": "Identifier",
+                "name": "out"
+              },
+              "storageLocation": "memory",
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "VariableDeclarationStatement",
+                "variables": [
+                  {
+                    "type": "VariableDeclaration",
+                    "typeName": {
+                      "type": "ElementaryTypeName",
+                      "name": "uint",
+                      "stateMutability": null
+                    },
+                    "name": "v",
+                    "identifier": {
+                      "type": "Identifier",
+                      "name": "v"
+                    },
+                    "storageLocation": null,
+                    "isStateVar": false,
+                    "isIndexed": false,
+                    "expression": null
+                  }
+                ],
+                "initialValue": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "nested"
+                  },
+                  "arguments": [
+                    {
+                      "type": "NumberLiteral",
+                      "number": "5",
+                      "subdenomination": null
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              },
+              {
+                "type": "VariableDeclarationStatement",
+                "variables": [
+                  {
+                    "type": "VariableDeclaration",
+                    "typeName": {
+                      "type": "ElementaryTypeName",
+                      "name": "bytes",
+                      "stateMutability": null
+                    },
+                    "name": "payload",
+                    "identifier": {
+                      "type": "Identifier",
+                      "name": "payload"
+                    },
+                    "storageLocation": "memory",
+                    "isStateVar": false,
+                    "isIndexed": false,
+                    "expression": null
+                  }
+                ],
+                "initialValue": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "MemberAccess",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "abi"
+                    },
+                    "memberName": "encodeWithSelector"
+                  },
+                  "arguments": [
+                    {
+                      "type": "MemberAccess",
+                      "expression": {
+                        "type": "MemberAccess",
+                        "expression": {
+                          "type": "Identifier",
+                          "name": "this"
+                        },
+                        "memberName": "echo"
+                      },
+                      "memberName": "selector"
+                    },
+                    {
+                      "type": "Identifier",
+                      "name": "data"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              },
+              {
+                "type": "VariableDeclarationStatement",
+                "variables": [
+                  {
+                    "type": "VariableDeclaration",
+                    "name": "ok",
+                    "identifier": {
+                      "type": "Identifier",
+                      "name": "ok"
+                    },
+                    "typeName": {
+                      "type": "ElementaryTypeName",
+                      "name": "bool",
+                      "stateMutability": null
+                    },
+                    "storageLocation": null,
+                    "isStateVar": false,
+                    "isIndexed": false,
+                    "expression": null
+                  },
+                  {
+                    "type": "VariableDeclaration",
+                    "name": "ret",
+                    "identifier": {
+                      "type": "Identifier",
+                      "name": "ret"
+                    },
+                    "typeName": {
+                      "type": "ElementaryTypeName",
+                      "name": "bytes",
+                      "stateMutability": null
+                    },
+                    "storageLocation": "memory",
+                    "isStateVar": false,
+                    "isIndexed": false,
+                    "expression": null
+                  }
+                ],
+                "initialValue": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "MemberAccess",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "target"
+                    },
+                    "memberName": "staticcall"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "name": "payload"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              },
+              {
+                "type": "IfStatement",
+                "condition": {
+                  "type": "UnaryOperation",
+                  "operator": "!",
+                  "subExpression": {
+                    "type": "Identifier",
+                    "name": "ok"
+                  },
+                  "isPrefix": true
+                },
+                "trueBody": {
+                  "type": "ExpressionStatement",
+                  "expression": {
+                    "type": "FunctionCall",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "revert"
+                    },
+                    "arguments": [
+                      {
+                        "type": "StringLiteral",
+                        "value": "staticcall failed",
+                        "parts": [
+                          "staticcall failed"
+                        ],
+                        "isUnicode": [
+                          false
+                        ]
+                      }
+                    ],
+                    "names": [],
+                    "identifiers": []
+                  }
+                },
+                "falseBody": null
+              },
+              {
+                "type": "ExpressionStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "MemberAccess",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "payee"
+                    },
+                    "memberName": "transfer"
+                  },
+                  "arguments": [
+                    {
+                      "type": "NumberLiteral",
+                      "number": "1",
+                      "subdenomination": "wei"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              },
+              {
+                "type": "VariableDeclarationStatement",
+                "variables": [
+                  {
+                    "type": "VariableDeclaration",
+                    "typeName": {
+                      "type": "ElementaryTypeName",
+                      "name": "bytes32",
+                      "stateMutability": null
+                    },
+                    "name": "d",
+                    "identifier": {
+                      "type": "Identifier",
+                      "name": "d"
+                    },
+                    "storageLocation": null,
+                    "isStateVar": false,
+                    "isIndexed": false,
+                    "expression": null
+                  }
+                ],
+                "initialValue": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "sha256"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "name": "data"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              },
+              {
+                "type": "ExpressionStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "=",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "out"
+                  },
+                  "right": {
+                    "type": "FunctionCall",
+                    "expression": {
+                      "type": "MemberAccess",
+                      "expression": {
+                        "type": "Identifier",
+                        "name": "abi"
+                      },
+                      "memberName": "encode"
+                    },
+                    "arguments": [
+                      {
+                        "type": "Identifier",
+                        "name": "ret"
+                      },
+                      {
+                        "type": "Identifier",
+                        "name": "v"
+                      },
+                      {
+                        "type": "Identifier",
+                        "name": "d"
+                      }
+                    ],
+                    "names": [],
+                    "identifiers": []
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "payable"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "echo",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "bytes",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": "calldata",
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": null,
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "EmitStatement",
+                "eventCall": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "Done"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "name": "x"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "external",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": null
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": null,
+          "parameters": [],
+          "returnParameters": null,
+          "body": {
+            "type": "Block",
+            "statements": []
+          },
+          "visibility": "external",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": true,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "payable"
+        }
+      ],
+      "kind": "contract"
+    }
+  ]
+}

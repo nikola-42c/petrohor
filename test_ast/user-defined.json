@@ -1,0 +1,722 @@
+{
+  "type": "SourceUnit",
+  "children": [
+    {
+      "type": "PragmaDirective",
+      "name": "solidity",
+      "value": "^0.8.20"
+    },
+    {
+      "type": "ContractDefinition",
+      "name": "Test",
+      "baseContracts": [],
+      "subNodes": [
+        {
+          "type": "FunctionDefinition",
+          "name": "inc",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "+",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "NumberLiteral",
+                    "number": "1",
+                    "subdenomination": null
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "dbl",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "*",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "NumberLiteral",
+                    "number": "2",
+                    "subdenomination": null
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "sq",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "*",
+                  "left": {
+                    "type": "Identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "Identifier",
+                    "name": "x"
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "n1",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "inc"
+                  },
+                  "arguments": [
+                    {
+                      "type": "Identifier",
+                      "name": "x"
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "n2",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "dbl"
+                  },
+                  "arguments": [
+                    {
+                      "type": "FunctionCall",
+                      "expression": {
+                        "type": "Identifier",
+                        "name": "inc"
+                      },
+                      "arguments": [
+                        {
+                          "type": "Identifier",
+                          "name": "x"
+                        }
+                      ],
+                      "names": [],
+                      "identifiers": []
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "n3",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "sq"
+                  },
+                  "arguments": [
+                    {
+                      "type": "FunctionCall",
+                      "expression": {
+                        "type": "Identifier",
+                        "name": "dbl"
+                      },
+                      "arguments": [
+                        {
+                          "type": "FunctionCall",
+                          "expression": {
+                            "type": "Identifier",
+                            "name": "inc"
+                          },
+                          "arguments": [
+                            {
+                              "type": "Identifier",
+                              "name": "x"
+                            }
+                          ],
+                          "names": [],
+                          "identifiers": []
+                        }
+                      ],
+                      "names": [],
+                      "identifiers": []
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "n4",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "BinaryOperation",
+                  "operator": "+",
+                  "left": {
+                    "type": "FunctionCall",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "sq"
+                    },
+                    "arguments": [
+                      {
+                        "type": "FunctionCall",
+                        "expression": {
+                          "type": "Identifier",
+                          "name": "dbl"
+                        },
+                        "arguments": [
+                          {
+                            "type": "FunctionCall",
+                            "expression": {
+                              "type": "Identifier",
+                              "name": "inc"
+                            },
+                            "arguments": [
+                              {
+                                "type": "FunctionCall",
+                                "expression": {
+                                  "type": "Identifier",
+                                  "name": "inc"
+                                },
+                                "arguments": [
+                                  {
+                                    "type": "Identifier",
+                                    "name": "x"
+                                  }
+                                ],
+                                "names": [],
+                                "identifiers": []
+                              }
+                            ],
+                            "names": [],
+                            "identifiers": []
+                          }
+                        ],
+                        "names": [],
+                        "identifiers": []
+                      }
+                    ],
+                    "names": [],
+                    "identifiers": []
+                  },
+                  "right": {
+                    "type": "FunctionCall",
+                    "expression": {
+                      "type": "Identifier",
+                      "name": "n3"
+                    },
+                    "arguments": [
+                      {
+                        "type": "FunctionCall",
+                        "expression": {
+                          "type": "Identifier",
+                          "name": "inc"
+                        },
+                        "arguments": [
+                          {
+                            "type": "Identifier",
+                            "name": "x"
+                          }
+                        ],
+                        "names": [],
+                        "identifiers": []
+                      }
+                    ],
+                    "names": [],
+                    "identifiers": []
+                  }
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        },
+        {
+          "type": "FunctionDefinition",
+          "name": "mega",
+          "parameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": "x",
+              "identifier": {
+                "type": "Identifier",
+                "name": "x"
+              },
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "returnParameters": [
+            {
+              "type": "VariableDeclaration",
+              "typeName": {
+                "type": "ElementaryTypeName",
+                "name": "uint",
+                "stateMutability": null
+              },
+              "name": null,
+              "identifier": null,
+              "storageLocation": null,
+              "isStateVar": false,
+              "isIndexed": false,
+              "expression": null
+            }
+          ],
+          "body": {
+            "type": "Block",
+            "statements": [
+              {
+                "type": "ReturnStatement",
+                "expression": {
+                  "type": "FunctionCall",
+                  "expression": {
+                    "type": "Identifier",
+                    "name": "sq"
+                  },
+                  "arguments": [
+                    {
+                      "type": "FunctionCall",
+                      "expression": {
+                        "type": "Identifier",
+                        "name": "sq"
+                      },
+                      "arguments": [
+                        {
+                          "type": "FunctionCall",
+                          "expression": {
+                            "type": "Identifier",
+                            "name": "dbl"
+                          },
+                          "arguments": [
+                            {
+                              "type": "FunctionCall",
+                              "expression": {
+                                "type": "Identifier",
+                                "name": "inc"
+                              },
+                              "arguments": [
+                                {
+                                  "type": "FunctionCall",
+                                  "expression": {
+                                    "type": "Identifier",
+                                    "name": "dbl"
+                                  },
+                                  "arguments": [
+                                    {
+                                      "type": "FunctionCall",
+                                      "expression": {
+                                        "type": "Identifier",
+                                        "name": "inc"
+                                      },
+                                      "arguments": [
+                                        {
+                                          "type": "Identifier",
+                                          "name": "x"
+                                        }
+                                      ],
+                                      "names": [],
+                                      "identifiers": []
+                                    }
+                                  ],
+                                  "names": [],
+                                  "identifiers": []
+                                }
+                              ],
+                              "names": [],
+                              "identifiers": []
+                            }
+                          ],
+                          "names": [],
+                          "identifiers": []
+                        }
+                      ],
+                      "names": [],
+                      "identifiers": []
+                    }
+                  ],
+                  "names": [],
+                  "identifiers": []
+                }
+              }
+            ]
+          },
+          "visibility": "public",
+          "modifiers": [],
+          "override": null,
+          "isConstructor": false,
+          "isReceiveEther": false,
+          "isFallback": false,
+          "isVirtual": false,
+          "stateMutability": "pure"
+        }
+      ],
+      "kind": "contract"
+    }
+  ]
+}
