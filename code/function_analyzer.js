@@ -1,5 +1,13 @@
-// scripts/analyze-ast.js
-// Usage: node scripts/analyze-ast.js
+/*
+CLI args:
+MIN_DEPTH - minimum function depth for table print (default is 0)
+TRACE=1 - print stack trace instead of table
+TARGET_FUNC=<function name> - the function for which theh stack trace is to be printed
+*/
+
+// Usage:
+//   MIN_DEPTH=0 node function_analyzer.js
+//   TRACE=1 TARGET_FUNC=enterRedemptionQueueWithPermit node code/function_analyzer.js
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -14,7 +22,41 @@ if (!fs.existsSync(astDir)) {
   process.exit(1);
 }
 
+// Flags
+const DEBUG_CALLS = process.env.DEBUG_CALLS === "1";
+const TRACE = process.env.TRACE === "1";
+const TARGET_FUNC = process.env.TARGET_FUNC || "";
+const MIN_DEPTH = process.env.MIN_DEPTH ? Number(process.env.MIN_DEPTH) : 0;
+
+// Pretty labels for expressions (for debug/trace printing)
+function prettyExpr(expr) {
+  if (!expr || typeof expr !== "object") return String(expr);
+  if (expr.type === "Identifier") return expr.name;
+  if (expr.type === "MemberAccess")
+    return `${prettyExpr(expr.expression)}.${expr.memberName}`;
+  if (expr.type === "ElementaryTypeName") return expr.name;
+  if (expr.type === "ElementaryTypeNameExpression")
+    return expr.typeName?.name || "<etype>";
+  if (expr.type === "FunctionCall")
+    return `${prettyExpr(expr.expression)}(...)`;
+  if (expr.type === "FunctionCallOptions")
+    return `${prettyExpr(expr.expression)}{...}(...)`;
+  if (expr.type === "TupleExpression") return "(...)";
+  return expr.type;
+}
+
+// Floor for non-call nodes
 const BASE_CALL_DEPTH = 0;
+
+/* ----------------------------- Builtin weights -----------------------------
+  0 calls: blockhash, blobhash, gasleft, addmod, mulmod, mullmod, keccak256, revert, assert, require
+  1 call : sha256, ripemd160, ecrecover, selfdestruct, abi.decode,
+           <addr>.call, <addr>.delegatecall, <addr>.staticcall
+  2 calls: abi.encode, abi.encodePacked, abi.encodeWithSelector,
+           abi.encodeWithSignature, abi.encodeCall,
+           bytes.concat, string.concat,
+           <address payable>.transfer, <address payable>.send
+--------------------------------------------------------------------------- */
 const IDENT_WEIGHT_0 = new Set([
   "assert",
   "require",
@@ -33,8 +75,6 @@ const IDENT_WEIGHT_1 = new Set([
   "ecrecover",
   "selfdestruct",
 ]);
-
-// MemberAccess helpers
 const ABI_1 = new Set(["decode"]);
 const ABI_2 = new Set([
   "encode",
@@ -48,7 +88,7 @@ const STRING_2 = new Set(["concat"]);
 const ADDR_1 = new Set(["call", "delegatecall", "staticcall"]);
 const ADDR_2 = new Set(["transfer", "send"]);
 
-/* ------------------------------- AST helpers ------------------------------ */
+/* -------------------------------- Helpers -------------------------------- */
 function children(node) {
   if (!node) return [];
   if (Array.isArray(node)) return node;
@@ -63,9 +103,8 @@ function children(node) {
   return [];
 }
 
-// regex for `bytes` and `u/int` casts
+// Casts are depth 0 (address(x), payable(y), uint256(z), bytes32(t), etc.)
 function isElementaryTypeIdentifier(expr) {
-  // Matches: address, payable, bool, string, bytes, byte, bytes1..bytes32, uint, uint8..uint256, int, int8..int256
   if (!expr || expr.type !== "Identifier") return false;
   const n = expr.name;
   if (
@@ -86,36 +125,43 @@ function isElementaryTypeIdentifier(expr) {
     return true;
   return false;
 }
-
-// makes casts cost 0
 function isTypeConversionCall(node) {
-  // True for: payable(x), address(y), uint256(z), bytes32(t), etc.
   if (!node || node.type !== "FunctionCall") return false;
   const expr = node.expression;
   if (!expr || typeof expr !== "object") return false;
   return (
+    expr.type === "ElementaryTypeName" ||
     expr.type === "ElementaryTypeNameExpression" ||
     expr.type === "TypeNameExpression" ||
-    expr.type === "ElementaryTypeName" ||
     isElementaryTypeIdentifier(expr)
   );
 }
 
-// Name for user-defined calls.
-// We now return Identifier name OR MemberAccess.memberName
-// (so `Lib.foo(...)` counts as user-defined if there's a function named `foo`)
-function calleeNameForUserDefined(expr, userFuncs) {
-  if (!expr || typeof expr !== "object") return null;
-  if (expr.type === "Identifier")
-    return userFuncs.has(expr.name) ? expr.name : null;
-  if (expr.type === "MemberAccess") {
-    const m = expr.memberName;
-    return userFuncs.has(m) ? m : null;
-  }
-  return null;
+function isCallNode(node) {
+  return (
+    node &&
+    (node.type === "FunctionCall" || node.type === "FunctionCallOptions")
+  );
 }
 
-// Builtin weight by callee expression (Identifier or MemberAccess)
+// All call-argument-ish children except the callee `expression` itself
+function callArgishChildren(node) {
+  if (!node || typeof node !== "object") return [];
+  const out = [];
+  for (const [k, v] of Object.entries(node)) {
+    if (k === "type" || k === "expression") continue;
+    if (v && typeof v === "object") out.push(v);
+  }
+  return out.flat();
+}
+
+// Heuristic so ERC-20 token.transfer(...) is NOT overcounted as 2:
+// treat .transfer/.send as 2 only when the base is clearly an address-like cast.
+function isAddressLikeBase(expr) {
+  // e.g., payable(target).transfer(...) or address(x).send(...)
+  return expr && expr.type === "FunctionCall" && isTypeConversionCall(expr);
+}
+
 function builtinWeight(expr) {
   if (!expr || typeof expr !== "object") return null;
 
@@ -123,8 +169,7 @@ function builtinWeight(expr) {
     const name = expr.name || "";
     if (IDENT_WEIGHT_0.has(name)) return 0;
     if (IDENT_WEIGHT_1.has(name)) return 1;
-    // Not listed → unknown identifier builtin
-    return null;
+    return null; // unknown identifier
   }
 
   if (expr.type === "MemberAccess") {
@@ -154,9 +199,9 @@ function builtinWeight(expr) {
     )
       return 2;
 
-    // low-level address ops: .call/.delegatecall/.staticcall (1), .transfer/.send (2)
+    // low-level address ops
     if (ADDR_1.has(member)) return 1;
-    if (ADDR_2.has(member)) return 2;
+    if (ADDR_2.has(member)) return isAddressLikeBase(base) ? 2 : 1;
 
     return null;
   }
@@ -164,117 +209,310 @@ function builtinWeight(expr) {
   return null;
 }
 
-function isCallNode(node) {
-  return (
-    node &&
-    (node.type === "FunctionCall" || node.type === "FunctionCallOptions")
-  );
-}
-
-// All call-argument-ish children except the callee `expression` itself
-function callArgishChildren(node) {
-  if (!node || typeof node !== "object") return [];
-  const out = [];
-  for (const [k, v] of Object.entries(node)) {
-    if (k === "type" || k === "expression") continue;
-    if (v && typeof v === "object") out.push(v);
-  }
-  return out.flat();
-}
-
 /* ---------------------------- Analyzer per file --------------------------- */
 function analyzeAst(ast, filename) {
-  const functions = new Map();
-  (function collect(node) {
+  // We collect function nodes with owner (contract/library) so we can resolve by node, not name.
+  const functionInfos = []; // { node, name, owner }
+  const functionsByName = new Map(); // name -> FunctionInfo[]
+  const libraryNames = new Set();
+  const structNames = new Set();
+  const eventNames = new Set();
+
+  // For inheritance scoping
+  const contractBases = new Map(); // owner -> Set(base names)
+  const reachableOwners = new Map(); // owner -> Set(owner ∪ bases ∪ transitive)
+
+  (function collect(node, owner = null) {
     if (!node) return;
-    if (Array.isArray(node)) return node.forEach(collect);
+    if (Array.isArray(node)) return node.forEach((n) => collect(n, owner));
     if (typeof node === "object") {
-      if (node.type === "FunctionDefinition" && node.name) {
-        functions.set(node.name, node);
+      if (
+        (node.type === "ContractDefinition" ||
+          node.type === "LibraryDefinition") &&
+        node.name
+      ) {
+        owner = node.name;
+        // collect base contracts (for contracts only)
+        if (node.type === "ContractDefinition") {
+          const bases = new Set();
+          for (const spec of node.baseContracts || []) {
+            // Ethers-solidity-parser usually: spec.baseName: { type: 'UserDefinedTypeName', namePath: 'ERC721' }
+            const bn = spec && spec.baseName;
+            const base =
+              (bn && (bn.name || bn.namePath)) || spec.name || spec.namePath;
+            if (base) bases.add(base);
+          }
+          contractBases.set(owner, bases);
+        }
       }
-      for (const v of Object.values(node)) collect(v);
+      if (node.type === "LibraryDefinition" && node.name) {
+        libraryNames.add(node.name);
+      }
+      if (node.type === "StructDefinition" && node.name) {
+        structNames.add(node.name);
+      }
+      if (node.type === "EventDefinition" && node.name) {
+        eventNames.add(node.name);
+      }
+      if (node.type === "FunctionDefinition" && node.name) {
+        const info = { node, name: node.name, owner: owner || "" };
+        functionInfos.push(info);
+        const arr = functionsByName.get(node.name) || [];
+        arr.push(info);
+        functionsByName.set(node.name, arr);
+      }
+      for (const v of Object.values(node)) collect(v, owner);
     }
-  })(ast);
+  })(ast, null);
 
-  const userFuncs = new Set(functions.keys());
-  const memo = new Map();
-  const inProgress = new Set();
+  // Compute reachable owners = owner ∪ all bases (transitively)
+  function computeReachable(owner) {
+    if (reachableOwners.has(owner)) return reachableOwners.get(owner);
+    const seen = new Set([owner]);
+    const stack = [owner];
+    while (stack.length) {
+      const cur = stack.pop();
+      const bases = contractBases.get(cur);
+      if (!bases) continue;
+      for (const b of bases) {
+        if (!seen.has(b)) {
+          seen.add(b);
+          stack.push(b);
+        }
+      }
+    }
+    reachableOwners.set(owner, seen);
+    return seen;
+  }
+  for (const owner of contractBases.keys()) computeReachable(owner);
 
-  function countFuncDepth(funcName) {
-    if (!functions.has(funcName)) return 0;
-    if (memo.has(funcName)) return memo.get(funcName);
-    if (inProgress.has(funcName)) return 1; // recursion guard: count the edge, stop expanding
+  // Treat struct ctor and event emit as 0 (optional; remove if you want them to count)
+  function specialNodeWeight(expr) {
+    if (!expr || typeof expr !== "object") return null;
+    if (expr.type === "Identifier") {
+      if (structNames.has(expr.name)) return 0;
+      if (eventNames.has(expr.name)) return 0;
+    }
+    return null;
+  }
 
-    inProgress.add(funcName);
-    const fdef = functions.get(funcName);
+  // Resolve possible user-defined callee nodes for a call expression.
+  // NOTE: we also try to prune by argument count when possible.
+  function resolveUserCallees(expr, currentOwner, callNode) {
+    if (!expr || typeof expr !== "object") return [];
+
+    // Helper: count call args if present
+    const argCount = (() => {
+      if (!callNode) return null;
+      if (Array.isArray(callNode.arguments)) return callNode.arguments.length;
+      return null;
+    })();
+
+    // Helper: filter by parameter count when available
+    const filterByParamCount = (arr) => {
+      if (argCount === null) return arr;
+      const filtered = arr.filter((fi) => {
+        const params = fi.node?.parameters?.parameters;
+        if (!Array.isArray(params)) return true; // unknown, keep
+        return params.length === argCount;
+      });
+      return filtered.length ? filtered : arr; // fallback if we filtered away everything
+    };
+
+    // foo(...)
+    if (expr.type === "Identifier") {
+      const all = functionsByName.get(expr.name) || [];
+      if (!currentOwner) return filterByParamCount(all);
+
+      const reach = reachableOwners.get(currentOwner);
+      if (reach && reach.size) {
+        const scoped = all.filter((fi) => reach.has(fi.owner));
+        const scopedFiltered = filterByParamCount(scoped);
+        if (scopedFiltered.length) return scopedFiltered;
+      }
+      return filterByParamCount(all);
+    }
+
+    // base.member(...)
+    if (expr.type === "MemberAccess") {
+      const base = expr.expression;
+      const member = expr.memberName;
+
+      // Lib.func(...) — only expand into that library's functions
+      if (base && base.type === "Identifier" && libraryNames.has(base.name)) {
+        const arr = functionsByName.get(member) || [];
+        return filterByParamCount(arr.filter((fi) => fi.owner === base.name));
+      }
+
+      // this.func(...) — prefer the current contract
+      if (base && base.type === "This") {
+        const arr = functionsByName.get(member) || [];
+        const scoped = arr.filter((fi) => fi.owner === currentOwner);
+        const filteredScoped = filterByParamCount(scoped);
+        return filteredScoped.length ? filteredScoped : filterByParamCount(arr);
+      }
+
+      // Any other obj.func(...) is treated as external (no expansion)
+      return [];
+    }
+
+    // Unknown callee shape
+    return [];
+  }
+
+  // Memo by NODE (not by name) to avoid conflating different functions
+  const memoByNode = new Map(); // node -> { d, t }
+  const inProgress = new Set(); // Set<node>
+
+  function countFuncNode(funcInfo) {
+    const node = funcInfo.node;
+    const owner = funcInfo.owner;
+
+    if (memoByNode.has(node)) return memoByNode.get(node);
+    if (inProgress.has(node)) {
+      // recursion guard: count the edge; minimal trace
+      return { d: 1, t: { kind: "recursion", function: funcInfo.name, owner } };
+    }
+
+    inProgress.add(node);
+    const fdef = node;
     const body = fdef.body || {};
+    const isTarget = !TARGET_FUNC || TARGET_FUNC === funcInfo.name;
 
-    function walk(node) {
-      if (!node || typeof node !== "object") return BASE_CALL_DEPTH;
+    function walk(n) {
+      if (!n || typeof n !== "object") return { d: BASE_CALL_DEPTH, t: null };
 
-      if (isCallNode(node)) {
-        const expr = node.expression;
-        // Depth in call args (values, nested calls inside args/options)
+      if (isCallNode(n)) {
+        const expr = n.expression;
+
+        // Recurse into args/expression
+        const argTraces = callArgishChildren(n).map(walk);
         const argDepth = Math.max(
           BASE_CALL_DEPTH,
-          ...callArgishChildren(node).map(walk)
+          ...argTraces.map((x) => x.d)
         );
+        const argPick = argTraces.sort((a, b) => b.d - a.d)[0] || {
+          d: BASE_CALL_DEPTH,
+          t: null,
+        };
 
-        // Depth in callee expression (covers odd cases like (factory())())
-        const exprDepth = walk(expr);
+        const exprTrace = walk(expr);
+        const exprDepth = exprTrace.d;
 
-        // If callee is a user-defined function, expand into it
-        const udName = calleeNameForUserDefined(expr, userFuncs);
-        const calleeDepth = udName ? countFuncDepth(udName) : BASE_CALL_DEPTH;
-
-        // Weight of THIS call (user-defined → 1, builtin → table, unknown → 1)
-        let w;
-        if (isTypeConversionCall(node)) {
-          w = 0; // casts don't add to depth
-        } else if (udName) {
-          w = 1; // user-defined calls
-        } else {
-          const bw = builtinWeight(expr);
-          w = bw !== null && bw !== undefined ? bw : 1; // unknown external/lib → defaults to 1
+        // Resolve user-defined candidates and take the MAX depth among them
+        const candidates = resolveUserCallees(expr, owner, n);
+        let calleeDepth = BASE_CALL_DEPTH;
+        let calleeTrace = { d: BASE_CALL_DEPTH, t: null };
+        if (candidates.length) {
+          let best = { d: -1, t: null };
+          for (const cand of candidates) {
+            const res = countFuncNode(cand);
+            if (res.d > best.d) best = res;
+          }
+          calleeDepth = best.d;
+          calleeTrace = best;
         }
 
-        // Weighted depth of this node is its weight plus the deepest child path
-        return w + Math.max(argDepth, exprDepth, calleeDepth);
+        // Weight for this call node
+        let w;
+        if (isTypeConversionCall(n)) {
+          w = 0; // casts don't add to depth
+        } else {
+          const special = specialNodeWeight(expr);
+          if (special !== null && special !== undefined) {
+            w = special; // struct ctor / event emit → 0
+          } else if (candidates.length) {
+            w = 1; // user-defined call
+          } else {
+            const bw = builtinWeight(expr);
+            w = bw !== null && bw !== undefined ? bw : 1; // external/unknown
+          }
+        }
+
+        const maxChild = Math.max(argDepth, exprDepth, calleeDepth);
+        const total = w + maxChild;
+
+        let via = "args";
+        let child = argPick.t;
+        if (calleeDepth >= argDepth && calleeDepth >= exprDepth) {
+          via = "callee";
+          child = calleeTrace.t;
+        } else if (exprDepth > argDepth) {
+          via = "expr";
+          child = exprTrace.t;
+        }
+
+        const traceNode = {
+          kind: "call",
+          expr: prettyExpr(expr),
+          weight: w,
+          parts: { arg: argDepth, expr: exprDepth, callee: calleeDepth },
+          via,
+          callee: candidates.length ? "(user-defined)" : null,
+          child,
+        };
+
+        if (DEBUG_CALLS && isTarget) {
+          console.log(
+            `[CALL] ${traceNode.expr}  w=${w}  arg=${argDepth}  expr=${exprDepth}  callee=${calleeDepth}  -> total=${total}  via:${via}`
+          );
+        }
+
+        return { d: total, t: TRACE ? traceNode : null };
       }
 
-      // Non-call node: take max over children
-      return Math.max(BASE_CALL_DEPTH, ...children(node).map(walk));
+      // Non-call node: pick deepest child
+      const kids = children(n).map(walk);
+      const best = kids.sort((a, b) => b.d - a.d)[0];
+      return best || { d: BASE_CALL_DEPTH, t: null };
     }
 
-    const d = walk(body);
-    memo.set(funcName, d);
-    inProgress.delete(funcName);
-    return d;
+    const res = walk(body);
+    memoByNode.set(node, res);
+    inProgress.delete(node);
+    return res;
   }
 
+  // Build rows + traces
   const rows = [];
-  for (const name of [...userFuncs].sort()) {
-    const fdef = functions.get(name);
+  const traces = []; // list of { file, contract, function, depth, trace }
+
+  for (const fi of functionInfos) {
+    const { d, t } = countFuncNode(fi);
+    const fdef = fi.node;
     rows.push({
       file: path.basename(filename),
-      function: name,
+      contract: fi.owner || "",
+      function: fi.name,
       visibility: fdef.visibility || "",
       stateMutability: fdef.stateMutability || "",
-      expanded_max_depth: countFuncDepth(name),
+      expanded_max_depth: d,
     });
+    if (TRACE) {
+      traces.push({
+        file: path.basename(filename),
+        contract: fi.owner || "",
+        function: fi.name,
+        depth: d,
+        trace: t,
+      });
+    }
   }
-  return rows;
+
+  return { rows, traces };
 }
 
 /* -------------------------- Process all AST JSONs ------------------------- */
 let allRows = [];
+let allTraces = []; // flat list across files
 const files = fs.readdirSync(astDir).filter((f) => f.endsWith(".json"));
 for (const file of files) {
   const fullPath = path.join(astDir, file);
   try {
     const ast = JSON.parse(fs.readFileSync(fullPath, "utf8"));
-    const rows = analyzeAst(ast, file);
+    const { rows, traces } = analyzeAst(ast, file);
     allRows.push(...rows);
+    if (TRACE) allTraces.push(...traces.map((t) => ({ ...t, file })));
   } catch (err) {
     console.error(`Failed to analyze ${file}: ${err.message}`);
   }
@@ -285,15 +523,76 @@ if (allRows.length === 0) {
   process.exit(0);
 }
 
-console.table(
-  allRows.sort(
-    (a, b) =>
-      b.expanded_max_depth - a.expanded_max_depth ||
-      a.file.localeCompare(b.file) ||
-      a.function.localeCompare(b.function)
-  )
-);
+// Always save depths JSON
+const depthsPath = path.join(astDir, "depths.json");
+fs.writeFileSync(depthsPath, JSON.stringify(allRows, null, 2));
+console.log(`Saved combined depths → ${depthsPath}`);
 
-const outFile = path.join(astDir, "depths.json");
-fs.writeFileSync(outFile, JSON.stringify(allRows, null, 2));
-console.log(`\nSaved combined depths → ${outFile}`);
+if (TRACE) {
+  // Save traces JSON
+  const tracePath = path.join(astDir, "depth_traces.json");
+  fs.writeFileSync(tracePath, JSON.stringify(allTraces, null, 2));
+  console.log(`Saved call traces → ${tracePath}`);
+
+  // Pretty-print the deepest match for TARGET_FUNC (if provided)
+  if (TARGET_FUNC) {
+    const matches = allTraces.filter((t) => t.function === TARGET_FUNC);
+    if (matches.length === 0) {
+      console.log(
+        `\nNo function named '${TARGET_FUNC}' found in collected ASTs.`
+      );
+    } else {
+      matches.sort((a, b) => b.depth - a.depth);
+      const top = matches[0];
+      console.log(
+        `\nMax-depth trace for ${TARGET_FUNC} (${top.file.replace(
+          /^.*\//,
+          ""
+        )} / ${top.contract || "<no contract>"}): depth=${top.depth}`
+      );
+      const printTrace = (node, indent = 0) => {
+        if (!node) return;
+        const pad = "  ".repeat(indent);
+        if (node.kind === "call") {
+          console.log(
+            `${pad}• ${node.expr}  [w=${node.weight}]  parts(arg=${
+              node.parts.arg
+            }, expr=${node.parts.expr}, callee=${node.parts.callee}) via:${
+              node.via
+            }${node.callee ? ` -> ${node.callee}` : ""}`
+          );
+          printTrace(node.child, indent + 1);
+        } else if (node.kind === "recursion") {
+          console.log(`${pad}↪ recursion(${node.function})`);
+        }
+      };
+      printTrace(top.trace, 0);
+    }
+  } else {
+    console.log(
+      "\nTRACE mode is on. Set TARGET_FUNC=<name> to pretty-print one function's max-depth path."
+    );
+  }
+} else {
+  // Table mode (no trace printed)
+  const rowsToPrint = allRows
+    .filter((r) => r.expanded_max_depth >= MIN_DEPTH)
+    .sort(
+      (a, b) =>
+        b.expanded_max_depth - a.expanded_max_depth ||
+        a.file.localeCompare(b.file) ||
+        a.contract.localeCompare(b.contract) ||
+        a.function.localeCompare(b.function)
+    );
+
+  console.table(
+    rowsToPrint.map((r) => ({
+      file: r.file,
+      contract: r.contract,
+      function: r.function,
+      visibility: r.visibility,
+      stateMutability: r.stateMutability,
+      expanded_max_depth: r.expanded_max_depth,
+    }))
+  );
+}
