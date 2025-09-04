@@ -258,6 +258,9 @@ function analyzeAst(ast, filename) {
     if (!node) return;
     if (Array.isArray(node)) return node.forEach((n) => collect(n, owner));
     if (typeof node === "object") {
+      if (node.kind && node.kind == "interface") {
+        return;
+      }
       if (
         (node.type === "ContractDefinition" ||
           node.type === "LibraryDefinition") &&
@@ -345,8 +348,8 @@ function analyzeAst(ast, filename) {
       if (argCount !== null) {
         const byCount = candidates.filter((fi) => {
           const params = fi.node?.parameters?.parameters || [];
-        return params.length === argCount;
-      });
+          return params.length === argCount;
+        });
         if (byCount.length === 1) return byCount;
         if (byCount.length > 1) candidates = byCount;
       }
@@ -622,7 +625,7 @@ if (TRACE) {
         a.contract.localeCompare(b.contract) ||
         a.function.localeCompare(b.function)
     );
-
+  
   console.table(
     rowsToPrint.map((r) => ({
       file: r.file,
