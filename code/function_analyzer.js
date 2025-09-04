@@ -463,7 +463,7 @@ function analyzeAst(ast, filename) {
             w = 1; // user-defined call
           } else {
             const bw = builtinWeight(expr);
-            w = bw !== null && bw !== undefined ? bw : 1; // external/unknown
+            w = bw !== null && bw !== undefined ? bw : 0; // external/unknown
           }
         }
 
