@@ -209,6 +209,38 @@ function builtinWeight(expr) {
   return null;
 }
 
+function paramTypes(paramList) {
+  if (!Array.isArray(paramList)) return [];
+  return paramList.map((p) => {
+    if (!p || !p.typeName) return "";
+    // Try to normalize names like uint256 vs uint
+    if (p.typeName.type === "ElementaryTypeName") {
+      return p.typeName.name || "";
+    }
+    if (p.typeName.type === "UserDefinedTypeName") {
+      return p.typeName.namePath || "";
+    }
+    return p.typeName.name || p.typeName.type || "";
+  });
+}
+
+function argsMatch(callNode, fi) {
+  if (!callNode || !Array.isArray(callNode.arguments)) return true;
+
+  const argCount = callNode.arguments.length;
+  const params = fi.node?.parameters?.parameters || [];
+
+  if (params.length !== argCount) return false;
+
+  // Optional: check types (basic match, may need refinement)
+  const fnTypes = paramTypes(params);
+  // NOTE: the AST for expressions doesn't always give argument types
+  // (only for parameters). So we conservatively check only count.
+  // You could integrate a type inference pass if you want exact matches.
+  return true;
+}
+
+
 /* ---------------------------- Analyzer per file --------------------------- */
 function analyzeAst(ast, filename) {
   // We collect function nodes with owner (contract/library) so we can resolve by node, not name.
@@ -301,36 +333,43 @@ function analyzeAst(ast, filename) {
   function resolveUserCallees(expr, currentOwner, callNode) {
     if (!expr || typeof expr !== "object") return [];
 
-    // Helper: count call args if present
-    const argCount = (() => {
-      if (!callNode) return null;
-      if (Array.isArray(callNode.arguments)) return callNode.arguments.length;
-      return null;
-    })();
+    // Helper: try to find the single correct overload
+    function pickOne(candidates) {
+      if (!candidates.length) return [];
+      if (candidates.length === 1) return candidates;
 
-    // Helper: filter by parameter count when available
-    const filterByParamCount = (arr) => {
-      if (argCount === null) return arr;
-      const filtered = arr.filter((fi) => {
-        const params = fi.node?.parameters?.parameters;
-        if (!Array.isArray(params)) return true; // unknown, keep
+      // Strict filter by arg count
+      const argCount = Array.isArray(callNode?.arguments)
+        ? callNode.arguments.length
+        : null;
+      if (argCount !== null) {
+        const byCount = candidates.filter((fi) => {
+          const params = fi.node?.parameters?.parameters || [];
         return params.length === argCount;
       });
-      return filtered.length ? filtered : arr; // fallback if we filtered away everything
-    };
+        if (byCount.length === 1) return byCount;
+        if (byCount.length > 1) candidates = byCount;
+      }
+
+      // Fallback: just pick the most-derived (currentOwner first, then first base)
+      const own = candidates.filter((fi) => fi.owner === currentOwner);
+      if (own.length) return [own[0]];
+
+      // Pick the first base contract match deterministically
+      return [candidates[0]];
+    }
 
     // foo(...)
     if (expr.type === "Identifier") {
       const all = functionsByName.get(expr.name) || [];
-      if (!currentOwner) return filterByParamCount(all);
+      if (!currentOwner) return pickOne(all);
 
       const reach = reachableOwners.get(currentOwner);
       if (reach && reach.size) {
         const scoped = all.filter((fi) => reach.has(fi.owner));
-        const scopedFiltered = filterByParamCount(scoped);
-        if (scopedFiltered.length) return scopedFiltered;
+        return pickOne(scoped);
       }
-      return filterByParamCount(all);
+        return pickOne(all);
     }
 
     // base.member(...)
@@ -341,15 +380,14 @@ function analyzeAst(ast, filename) {
       // Lib.func(...) — only expand into that library's functions
       if (base && base.type === "Identifier" && libraryNames.has(base.name)) {
         const arr = functionsByName.get(member) || [];
-        return filterByParamCount(arr.filter((fi) => fi.owner === base.name));
+        return pickOne(arr.filter((fi) => fi.owner === base.name));
       }
 
       // this.func(...) — prefer the current contract
       if (base && base.type === "This") {
         const arr = functionsByName.get(member) || [];
         const scoped = arr.filter((fi) => fi.owner === currentOwner);
-        const filteredScoped = filterByParamCount(scoped);
-        return filteredScoped.length ? filteredScoped : filterByParamCount(arr);
+        return pickOne(scoped.length ? scoped : arr);
       }
 
       // Any other obj.func(...) is treated as external (no expansion)
