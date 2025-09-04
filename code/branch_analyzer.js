@@ -179,6 +179,7 @@ const analyzeBranches = async (contracts) => {
     path: "../branching_output.csv",
     header: [
       { id: "file", title: "File Name" },
+      { id: "contract", title: "Contract Name" },
       { id: "maxNesting", title: "Max Nesting" },
     ],
   });
@@ -193,9 +194,18 @@ const analyzeBranches = async (contracts) => {
 
       for (const node of ast.children) {
         if (node.type === "PragmaDirective") continue;
-        if (!node.subNodes) continue;
+        if (node.type !== "ContractDefinition" && node.type !== "LibraryDefinition") {
+          continue;
+        }
+        if (node.kind && node.kind == "interface") {
+          continue;
+        }
 
-        for (const subnode of node.subNodes) {
+        let maxNestingForThisContract = { value: 0 }
+
+        // if (!node.subNodes) continue;
+
+        for (const subnode of node.subNodes || []) {
           if (
             subnode.type === "FunctionDefinition" &&
             subnode.body &&
@@ -203,21 +213,27 @@ const analyzeBranches = async (contracts) => {
           ) {
             for (const statement of subnode.body.statements) {
               if (verbose) console.log("[CURRENT STATEMENT] - ", statement);
-              parseIfStatements(statement, maxNestingForContract);
-              parseTernaryStatement(statement, maxNestingForContract);
+              const ifDepth = parseIfStatements(statement, maxNestingForThisContract);
+              const ternaryDepth = parseTernaryStatement(statement, maxNestingForThisContract);
+
+              const localMax = Math.max(ifDepth, ternaryDepth);
+              maxNestingForThisContract.value = Math.max(
+                maxNestingForThisContract.value,
+                localMax
+              )
             }
           }
         }
-      }
 
-      records.push({ file, maxNesting: maxNestingForContract.value });
+        records.push({ file, contract:node.name, maxNesting: maxNestingForThisContract.value });
 
-      maxNestingHist[maxNestingForContract.value]++;
-      totalContractCount++;
+        maxNestingHist[maxNestingForThisContract.value]++;
+        totalContractCount++;
 
-      if (maxNestingForContract.value > overallMaxNesting) {
-        overallMaxNesting = maxNestingForContract.value;
-        overallMaxNestingFile = file;
+        if (maxNestingForThisContract.value > overallMaxNesting) {
+          overallMaxNesting = maxNestingForThisContract.value;
+          overallMaxNestingFile = file;
+        }
       }
     } catch (err) {
       console.error(`${err} - file: ${file}`);

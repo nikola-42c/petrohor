@@ -207,6 +207,7 @@ const analyzeLoopsAndBranches = async (contracts) => {
     path: "../loop_branch_output.csv",
     header: [
       { id: "file", title: "File Name" },
+      { id: "contract", title: "Contract Name" }, // NEW
       { id: "maxNesting", title: "Max Nesting" },
     ],
   });
@@ -216,15 +217,25 @@ const analyzeLoopsAndBranches = async (contracts) => {
   contracts.forEach(({ file, ast }) => {
     if (!ast) return;
 
-    let maxNestingForContract = { value: 0 };
+    // let maxNestingForContract = { value: 0 };
     try {
       for (const node of ast.children) {
         if (node.type === "PragmaDirective") {
           continue;
         }
-        if (!node.subNodes) continue;
+        if (
+          node.type !== "ContractDefinition" &&
+          node.type !== "LibraryDefinition"
+        ) {
+          continue;
+        }
+        if (node.kind && node.kind == "interface") {
+          continue;
+        }
 
-        for (const subNode of node.subNodes) {
+        let maxNestingForThisContract = { value: 0 };
+
+        for (const subNode of node.subNodes || []) {
           if (
             subNode.type === "FunctionDefinition" &&
             subNode.body &&
@@ -232,23 +243,33 @@ const analyzeLoopsAndBranches = async (contracts) => {
           ) {
             for (const statement of subNode.body.statements) {
               if (verbose) console.log("[CURRENT STATEMENT] -", statement);
-              parseLoop(statement, maxNestingForContract);
-              parseIfStatements(statement, maxNestingForContract);
-              parseTernaryStatement(statement, maxNestingForContract);
+              const loopDepth = parseLoop(statement, maxNestingForThisContract);
+              const ifDepth = parseIfStatements(statement, maxNestingForThisContract);
+              const ternaryDepth = parseTernaryStatement(statement, maxNestingForThisContract);
+
+              const localMax = Math.max(loopDepth, ifDepth, ternaryDepth);
+              maxNestingForThisContract.value = Math.max(
+                maxNestingForThisContract.value,
+                localMax
+              )
             }
           }
         }
-      }
 
-      // Add record to array for CSV writing
-      records.push({ file, maxNesting: maxNestingForContract.value });
+        // Add record to array for CSV writing
+        records.push({
+          file,
+          contract: node.name,
+          maxNesting: maxNestingForThisContract.value,
+        });
 
-      maxNestingHist[maxNestingForContract.value]++;
-      totalContractCount++;
+        maxNestingHist[maxNestingForThisContract.value]++;
+        totalContractCount++;
 
-      if (maxNestingForContract.value > overallMaxNesting) {
-        overallMaxNesting = maxNestingForContract.value;
-        overallMaxNestingFile = file;
+        if (maxNestingForThisContract.value > overallMaxNesting) {
+          overallMaxNesting = maxNestingForThisContract.value;
+          overallMaxNestingFile = `${file}:${node.name}`;
+        }
       }
     } catch (err) {
       console.error(`${err} - file: ${file}`);
